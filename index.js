@@ -1,7 +1,13 @@
+// Load environment variables for development
+require('dotenv').load();
+
 const express = require('express');
+const api = require('./api/api');
+
 
 const app = express();
 app.use(express.static('public'));
+app.use('/api', api);
 
 app.get('/', (req, res) => res.send('See you later alligator'));
 

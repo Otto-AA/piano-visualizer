@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/Otto-AA/piano-visualizer#readme",
   "dependencies": {
-    "express": "^4.16.3"
+    "dotenv": "^6.0.0",
+    "express": "^4.16.3",
+    "mongodb": "^3.1.1"
   }
 }
