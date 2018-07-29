@@ -1,0 +1,22 @@
+{
+  "name": "piano-visualizer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Otto-AA/piano-visualizer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Otto-AA/piano-visualizer/issues"
+  },
+  "homepage": "https://github.com/Otto-AA/piano-visualizer#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
