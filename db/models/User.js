@@ -39,7 +39,7 @@ userSchema.virtual('user_id').get(function () { return this._id; });
 if (!userSchema.options.toObject) userSchema.options.toObject = {};
 userSchema.options.toObject.transform = function (doc, ret, options) {
   // remove the _id of every document before returning the result
-  delete ret._id;
+  delete ret.password;
   return ret;
 }
 
