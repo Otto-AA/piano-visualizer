@@ -5,8 +5,15 @@ const expect = require('chai').expect;
 
 const express = require('express');
 const { notFoundError } = require('./ErrorResponse');
-const db = require('../db/db');
-db.connect();
+const mongoose = require('mongoose');
+const mongo_url = process.env.MONGO_URL;
+mongoose.connect(mongo_url, (err) => {
+    if (err) {
+        console.error('Error while connecting database', err);
+        throw err;
+    }
+    console.log('Connected to database');
+});
 
 describe('Integration test: API', function () {
     before(function (done) {
@@ -29,7 +36,7 @@ describe('Integration test: API', function () {
     });
     
     after(function () {
-      db.disconnect((err, res) => {
+      mongoose.disconnect((err, res) => {
           if (err) {
               return console.error('Error while disconnecting from database', err);
           }
