@@ -13,7 +13,7 @@ function SuccessResponse({ code = 200, data = {} }) {
         message,
         data
     }
-});
+};
 
 function ErrorResponse({ code, message, detail = {} }) {
     if (typeof code !== 'number') {
