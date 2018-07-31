@@ -44,6 +44,24 @@ describe('Integration test: API', function () {
       });
     });
 
+    describe('Signup test user', function () {
+        const testUser = {
+          "user_name": "Fritz",
+          "description": "It's a me, Mario!",
+          "email": "user@example.com",
+          "password": "myPass007"
+        };
+        
+        it ('should respond with 200 and verification_id', function (done) {
+            this.request.post('/api/signup')
+                .send(testUser)
+                .expect(200, function (err, res) {
+                    console.log('signup response', res);
+                    done();
+                });
+        });
+    });
+            
     it('should respond with 404', function (done) {
         this.request.get('/api/user')
             .expect('Content-Type', /json/)
