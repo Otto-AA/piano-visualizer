@@ -1,0 +1,738 @@
+{
+  "openapi" : "3.0.0",
+  "servers" : [ {
+    "description" : "SwaggerHub API Auto Mocking",
+    "url" : "https://virtserver.swaggerhub.com/piano-visualizer/piano-visualizer-api/1.0.0"
+  } ],
+  "info" : {
+    "description" : "This API provides access to https://piano-visualizer.herokuapp.com/",
+    "version" : "1.0.0",
+    "title" : "Piano Visualizer API",
+    "contact" : {
+      "email" : "piano.visualizer@gmail.com"
+    },
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "tags" : [ {
+    "name" : "users",
+    "description" : "Managing user accounts"
+  }, {
+    "name" : "songs",
+    "description" : "Managing songs"
+  }, {
+    "name" : "designs",
+    "description" : "Managing designs for songs"
+  } ],
+  "paths" : {
+    "/signup" : {
+      "post" : {
+        "tags" : [ "users" ],
+        "summary" : "Start verification process",
+        "operationId" : "addInventory",
+        "description" : "Adds an user to the database and sends a verification email.",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UserSignup"
+              }
+            }
+          },
+          "description" : "Inventory item to add"
+        },
+        "responses" : {
+          "200" : {
+            "description" : "verification email sent",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Verification"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "invalid input"
+          },
+          "409" : {
+            "description" : "an user or verification token with the same id already exists"
+          }
+        }
+      }
+    },
+    "/verify_signup" : {
+      "post" : {
+        "tags" : [ "users" ],
+        "summary" : "verify signup",
+        "operationId" : "verifySignup",
+        "description" : "Verify the verification_id and activates the user account",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Verification"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/User"
+          },
+          "400" : {
+            "$ref" : "#/components/responses/InvalidArguments"
+          }
+        }
+      }
+    },
+    "/user" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "get user info",
+        "operationId" : "getUserInfo",
+        "description" : "Get publicly available information about the user.",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "user_id",
+          "description" : "user_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/User"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "users" ],
+        "summary" : "delete the user account",
+        "operationId" : "deleteUser",
+        "description" : "permanently delete the user account parameters",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/emailParam"
+        }, {
+          "$ref" : "#/components/parameters/passwordParam"
+        } ],
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Success"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/login" : {
+      "post" : {
+        "tags" : [ "users" ],
+        "summary" : "login",
+        "operationId" : "login",
+        "description" : "login and store user_id in session",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UserCredentials"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/User"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/logout" : {
+      "post" : {
+        "tags" : [ "users" ],
+        "summary" : "logout",
+        "operationId" : "logout",
+        "description" : "logout from the current session",
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Success"
+          }
+        }
+      }
+    },
+    "/current_user" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "get active user",
+        "operationId" : "getCurrentUser",
+        "description" : "get the currently logged in user",
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/User"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/LoginRequired"
+          }
+        }
+      }
+    },
+    "/songlist" : {
+      "get" : {
+        "tags" : [ "songs" ],
+        "summary" : "get songs from specific user",
+        "description" : "Get a list of all published songs by a specific user.",
+        "operationId" : "getSonglist",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/UserId"
+        } ],
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Songlist"
+          }
+        }
+      }
+    },
+    "/reorder_songlist" : {
+      "post" : {
+        "tags" : [ "songs" ],
+        "summary" : "reorder songlist",
+        "description" : "change the order of the songlist",
+        "operationId" : "reorderSonglist",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "required" : [ "songlist" ],
+                "properties" : {
+                  "songlist" : {
+                    "type" : "array",
+                    "description" : "ordered song_ids",
+                    "items" : {
+                      "type" : "string",
+                      "description" : "song_id"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Success"
+          },
+          "400" : {
+            "$ref" : "#/components/responses/InvalidArguments"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/LoginRequired"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/song" : {
+      "get" : {
+        "tags" : [ "songs" ],
+        "summary" : "get a song",
+        "description" : "Get a single song by song_id",
+        "operationId" : "getSong",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/SongId"
+        } ],
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Song"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "songs" ],
+        "summary" : "delete a song",
+        "description" : "Delete a single song by song_id",
+        "operationId" : "deleteSong",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/SongId"
+        } ],
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Success"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/LoginRequired"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "songs" ],
+        "summary" : "upload a song",
+        "description" : "upload a song to the database",
+        "operationId" : "uploadSong",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Song"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "$ref" : "#/components/responses/Song"
+          },
+          "400" : {
+            "$ref" : "#/components/responses/InvalidArguments"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/LoginRequired"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "songs" ],
+        "summary" : "partial update of song",
+        "description" : "change one or more fields of a song (TODO: Not all fields are required)\n",
+        "operationId" : "updateSong",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Song"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "$ref" : "#/components/responses/Song"
+          },
+          "400" : {
+            "$ref" : "#/components/responses/InvalidArguments"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/Unauthorized"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/design" : {
+      "get" : {
+        "tags" : [ "designs" ],
+        "summary" : "get design",
+        "description" : "get a design for a song via the design_id",
+        "operationId" : "getDesign",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/DesignId"
+        } ],
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Design"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "designs" ],
+        "summary" : "create design",
+        "description" : "upload a new design to the database",
+        "operationId" : "postDesign",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Design"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "$ref" : "#/components/responses/Design"
+          },
+          "400" : {
+            "$ref" : "#/components/responses/InvalidArguments"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/LoginRequired"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "designs" ],
+        "summary" : "delete a design",
+        "description" : "permanently delete a design from the database",
+        "operationId" : "deleteDesign",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/DesignId"
+        } ],
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Success"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/LoginRequired"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "designs" ],
+        "summary" : "update a design",
+        "description" : "partial update of a design (TODO: Not everything required)\n",
+        "operationId" : "updateDesign",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Design"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Success"
+          },
+          "400" : {
+            "$ref" : "#/components/responses/InvalidArguments"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/LoginRequired"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Verification" : {
+        "type" : "object",
+        "required" : [ "verification_id" ],
+        "properties" : {
+          "verification_id" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "UserSignup" : {
+        "type" : "object",
+        "required" : [ "user_name", "email", "password" ],
+        "properties" : {
+          "user_name" : {
+            "type" : "string",
+            "example" : "Fritz"
+          },
+          "description" : {
+            "type" : "string",
+            "example" : "It's a me, Mario!"
+          },
+          "email" : {
+            "type" : "string",
+            "format" : "email"
+          },
+          "password" : {
+            "type" : "string",
+            "example" : "myPass007"
+          }
+        }
+      },
+      "UserCredentials" : {
+        "type" : "object",
+        "required" : [ "email", "password" ],
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "format" : "email"
+          },
+          "password" : {
+            "type" : "string",
+            "example" : "myPass007"
+          }
+        }
+      },
+      "UserInfo" : {
+        "type" : "object",
+        "required" : [ "user_id", "user_name" ],
+        "properties" : {
+          "user_id" : {
+            "type" : "string"
+          },
+          "user_name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Song" : {
+        "type" : "object",
+        "required" : [ "song_id", "song_name", "user_id", "song_number", "composers", "created_on", "files", "design_id" ],
+        "properties" : {
+          "song_id" : {
+            "type" : "string"
+          },
+          "song_name" : {
+            "type" : "string"
+          },
+          "user_id" : {
+            "type" : "string"
+          },
+          "design_id" : {
+            "type" : "string"
+          },
+          "song_number" : {
+            "type" : "integer",
+            "minimum" : 0
+          },
+          "composers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "created_on" : {
+            "type" : "string"
+          },
+          "files" : {
+            "type" : "object",
+            "properties" : {
+              "mp3" : {
+                "type" : "string",
+                "format" : "url"
+              },
+              "mid" : {
+                "type" : "string",
+                "format" : "url"
+              },
+              "pdf" : {
+                "type" : "string",
+                "format" : "url"
+              }
+            }
+          }
+        }
+      },
+      "Design" : {
+        "type" : "object"
+      },
+      "Error" : {
+        "type" : "object",
+        "required" : [ "code", "message" ],
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
+      "InvalidArguments" : {
+        "type" : "object",
+        "required" : [ "code", "message", "requiredArguments", "invalidArguments" ],
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "requiredArguments" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "invalidArguments" : {
+            "type" : "object",
+            "description" : "keys are the invalid arguments, values an information message"
+          }
+        }
+      }
+    },
+    "parameters" : {
+      "UserId" : {
+        "in" : "query",
+        "name" : "user_id",
+        "required" : true,
+        "schema" : {
+          "type" : "string"
+        },
+        "description" : "lower-case letters-only version of the user_name"
+      },
+      "SongId" : {
+        "in" : "query",
+        "name" : "song_id",
+        "required" : true,
+        "schema" : {
+          "type" : "string"
+        },
+        "description" : "lower-case letters-only version of the song_name"
+      },
+      "DesignId" : {
+        "in" : "query",
+        "name" : "design_id",
+        "required" : true,
+        "schema" : {
+          "type" : "string"
+        },
+        "description" : "lower-case letters-only design_id"
+      },
+      "emailParam" : {
+        "in" : "query",
+        "name" : "email",
+        "required" : true,
+        "schema" : {
+          "type" : "string",
+          "format" : "email"
+        },
+        "description" : "email address linked to the user account"
+      },
+      "passwordParam" : {
+        "in" : "query",
+        "name" : "password",
+        "required" : true,
+        "schema" : {
+          "type" : "string"
+        }
+      }
+    },
+    "responses" : {
+      "Songlist" : {
+        "description" : "list of songs ordered by creation date",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/components/schemas/Song"
+              }
+            }
+          }
+        }
+      },
+      "Song" : {
+        "description" : "object containing metadata and links to a song",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Song"
+            }
+          }
+        }
+      },
+      "Design" : {
+        "description" : "object containing design settings",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Design"
+            }
+          }
+        }
+      },
+      "User" : {
+        "description" : "object containing user info",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/UserInfo"
+            }
+          }
+        }
+      },
+      "Success" : {
+        "description" : "action successfully executed",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "type" : "object",
+              "required" : [ "message" ],
+              "properties" : {
+                "message" : {
+                  "type" : "string",
+                  "description" : "describes the performed action"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InvalidArguments" : {
+        "description" : "arguments were missing or invalid",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/InvalidArguments"
+            }
+          }
+        }
+      },
+      "LoginRequired" : {
+        "description" : "The action requires to be logged in",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized" : {
+        "description" : "Unauthorized",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound" : {
+        "description" : "the requested resource was not found",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

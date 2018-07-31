@@ -1,10 +1,11 @@
-const db = require('./db');
-const express = require('express')
-const router = express.Router();
+const bodyParser = require("body-parser");
+const userRouter = require('./user.router');
 
+module.exports = function (path, app) {
 
-router.get('/', (req, res) => {
-    res.send('Cookie party!');
-});
-
-module.exports = router;
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+    app.use(bodyParser.json());
+    userRouter(path, app);
+};

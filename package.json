@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines" : {
+    "node" : ">=8.10.0"
+  },
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --file test/setup.js */**.test.js"
   },
   "repository": {
     "type": "git",
@@ -18,8 +21,16 @@
   },
   "homepage": "https://github.com/Otto-AA/piano-visualizer#readme",
   "dependencies": {
+    "body-parser": "^1.18.3",
+    "chai": "^4.1.2",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
-    "mongodb": "^3.1.1"
+    "mocha": "^5.2.0",
+    "mongodb": "^3.1.1",
+    "mongoose": "^5.2.5",
+    "proxyquire": "^2.0.1",
+    "sinon": "^6.1.4",
+    "supertest": "^3.1.0",
+    "uuid": "^3.3.2"
   }
 }
