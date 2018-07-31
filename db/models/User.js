@@ -37,8 +37,8 @@ userSchema.path('password').set(password_encryption.encrypt);
 userSchema.virtual('user_id').get(function () { return this._id; });
 
 userSchema.set('toObject', {
-    transform: function(smth) {
-        console.log('toObject called', smth);
+    transform: function() {
+        console.log('toObject called', this);
         // console.log('Calling toJSON transform', [...args]);
     }
 });
