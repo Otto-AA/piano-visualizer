@@ -60,7 +60,7 @@ describe('Router: user', function () {
             .get('/api/user')
             .expect('Content-Type', /json/)
             .expect(200, function (err, res) {
-                expect(res.body).to.deep.equal(userData);
+                expect(res.body.data.user).to.deep.equal(userData);
                 done();
             });
 
