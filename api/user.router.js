@@ -100,7 +100,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     User.validateCredentials(email, password)
         .then(user => {
-            res.send(SuccessResponse({ user });
+            res.send(SuccessResponse({ user }));
         })
         .catch(err => res.status(403).send(err));
 });
