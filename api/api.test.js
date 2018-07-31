@@ -90,8 +90,11 @@ describe('Integration test: API', function () {
     it('should respond with 200 and test user', function (done) {
         this.request.get(`/api/user?user_id=${testUser.user_id}`)
             .expect(200, function (err, res) {
-                console.log(res.body);
-                expect(res.body.data.user).to.be.an('object');
+                const { user_name, email } = res.body.data.user;
+ 
+                expect(user_id).to.be.equal(testUser.user_id);
+                expect(user_name).to.be.equal(testUser.user_name);
+                expect(email).to.be.equal(testUser.email);
                 done();
             });
     });
