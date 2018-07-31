@@ -29,7 +29,9 @@ describe('Integration test: API', function () {
     });
     
     after(function () {
-      db.disconnect();
+      db.disconnect()
+        .then(res => console.log('Disconnected from database', res))
+        .catch(err => console.error('Error while disconnecting from database', err));
     });
 
     it('should respond with 404', function (done) {
