@@ -59,6 +59,7 @@ describe('Integration test: API', function () {
                     .expect(200, (err, res) => {
                         if (err) {
                             console.error('Errory while verifying test user', err);
+                            console.error(res);
                             throw err;
                         }
                         console.log(res.body);
