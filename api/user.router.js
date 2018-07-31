@@ -48,7 +48,7 @@ router.post('/signup', (req, res) => {
         });
 });
 
-router.post('/verify_user', async (req, res) => {
+router.post('/verify_signup', async (req, res) => {
     const { verification_id } = req.body;
 
     try {
