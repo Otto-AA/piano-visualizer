@@ -56,7 +56,7 @@ describe('Integration test: API', function () {
                 .send(testUser)
                 .expect('Content-Type', /json/)
                 .expect(200, function (err, res) {
-                    expect(res.body.verification_id).to.be.a('string');
+                    expect(res.body.data.verification_id).to.be.a('string');
                     done();
                 });
         });
