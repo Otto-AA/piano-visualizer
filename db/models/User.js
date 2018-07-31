@@ -34,6 +34,10 @@ userSchema.path('user_name').set(function (user_name) {
 // Encrypt password
 userSchema.path('password').set(password_encryption.encrypt);
 
+userSchema.virtual('user_id').get(function () {
+    return this._id;
+});
+
 
 // Static functions
 //
