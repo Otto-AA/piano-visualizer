@@ -1,5 +1,5 @@
 // TODO: Rename file
-function SuccessResponse({ code, data = {} }) {
+function SuccessResponse({ code = 200, data = {} }) {
     if (typeof code !== 'number') {
         throw new Error('Invalid success code');
     }
