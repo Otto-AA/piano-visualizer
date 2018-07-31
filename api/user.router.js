@@ -23,7 +23,7 @@ router.post('/signup', (req, res) => {
 
     // Save verification to database
     verification.save()
-        .then(val => res.send(SuccessResponse({ verification_id })))
+        .then(val => res.send(SuccessResponse(200, { verification_id })))
         .catch(err => {
             // MongoDB duplicate key error
             if (err.code === 11000) {
