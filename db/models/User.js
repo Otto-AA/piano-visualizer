@@ -6,7 +6,8 @@ const password_encryption = require('../../lib/password_encryption');
 const userSchema = new mongoose.Schema({
     _id: {
         type: String,
-        required: true
+        required: true,
+        alias: 'user_id'
     },
     user_name: {
         type: String,
@@ -33,10 +34,6 @@ userSchema.path('user_name').set(function (user_name) {
 
 // Encrypt password
 userSchema.path('password').set(password_encryption.encrypt);
-
-userSchema.virtual('user_id').get(function () {
-    return this._id;
-});
 
 
 // Static functions
