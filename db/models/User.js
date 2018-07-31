@@ -36,12 +36,12 @@ userSchema.path('user_name').set(function (user_name) {
 userSchema.path('password').set(password_encryption.encrypt);
 userSchema.virtual('user_id').get(function () { return this._id; });
 
-userSchema.set('toObject', {
-    transform: function() {
-        console.log('toObject called', this);
-        // console.log('Calling toJSON transform', [...args]);
-    }
-});
+if (!userSchema.options.toObject) userSchema.options.toObject = {};
+userSchema.options.toObject.transform = function (doc, ret, options) {
+  // remove the _id of every document before returning the result
+  delete ret._id;
+  return ret;
+}
 
 
 // Static functions
