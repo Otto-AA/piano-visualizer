@@ -38,7 +38,8 @@ userSchema.virtual('user_id').get(function () { return this._id; });
 
 userSchema.set('toObject', {
     transform: function(...args) {
-        console.log('Calling toJSON transform', [...args]);
+        console.log('toObject called');
+        // console.log('Calling toJSON transform', [...args]);
     }
 });
 
