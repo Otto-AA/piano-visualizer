@@ -4,24 +4,9 @@ const supertest = require('supertest');
 const expect = require('chai').expect;
 
 const express = require('express');
-const { notFoundError } = require('./ErrorResponse');
-const mongoose = require('mongoose');
-const mongo_url = process.env.MONGO_URL;
-mongoose.connect(mongo_url, (err) => {
-    if (err) {
-        console.error('Error while connecting database', err);
-        throw err;
-    }
-});
+const { notFoundError } = require('./Response');
 
 describe('Integration test: API', function () {
-    const testUser = {
-        "user_id": "____default_user____",
-      "user_name": "____default_user____",
-      "description": "It's a me, Mario!",
-      "email": "user@example.com",
-      "password": "myPass007"
-    };
     before(function (done) {
         // Create an express application object
         const app = express();
@@ -40,62 +25,91 @@ describe('Integration test: API', function () {
 
         done();
     });
-    
-    before(function deleteTestUser(done)  {
-        this.request.delete(`/api/user?user_id=${testUser.user_id}`)
-            .then(() => done())
-            .catch(() => done());
+
+    describe('Signup Process', function () {
+        it('POST /api/signup should get verification_id and verify user with it', function (done) {
+            // Change user_name and email to prevent conflicts
+            let newUser = this.testData.user;
+            newUser.user_id = 'new_user';
+            newUser.user_name = 'new_user';
+            newUser.email = 'new.user@mail.com';
+
+            // Get verification_id
+            this.request
+                .post('/api/signup')
+                .send(newUser)
+                .expect(200, (err, res) => {
+                    if (err) return done(err);
+
+                    const { verification_id } = res.body.data;
+                    expect(verification_id).to.be.a('string');
+
+                    // Verify user
+                    this.request
+                        .post('/api/verify_signup')
+                        .send({ verification_id })
+                        .expect(200, (err, res) => {
+                            const { user_id, user_name } = res.body.data.user;
+                            expect(user_id).to.equal(newUser.user_id);
+                            expect(user_name).to.equal(newUser.user_name);
+                            done(err);
+                        })
+                });
+        });
+        it('POST /api/signup should respond with 400 given invalid input', function (done) {
+            let invalidInput = this.testData.user;
+            delete invalidInput.email;
+
+            this.request
+                .post('/api/signup')
+                .send(invalidInput)
+                .expect(400, function (err, res) {
+                    const { message } = res.body;
+                    expect(message).to.equal('Invalid arguments');
+                    done(err);
+                });
+        });
+        it('POST /api/verify_signup should return 400 given an invalid verification_id', function (done) {
+            this.request
+                .post('/api/verify_signup')
+                .send({ verification_id: 'invalid' })
+                .expect(400, (err, res) => {
+                    done(err);
+                });
+        });
+        // it('POST /api/signup should respond with 409 if user already exists', function (done) {
+        //     this.request
+        //         .post('/api/signup')
+        //         .send(this.testData.user)
+        //         .expect(409, function (err, res) {
+        //             const { message } = res.body;
+        //             expect(message).to.equal('User already existing');
+        //             done();
+        //         });
+        // });
     });
-    
-    before(function createTestUser(done) {
-        this.request.post('/api/signup')
-            .send(testUser)
-            .expect('Content-Type', /json/)
-            .expect(200, (err, res) => {
-                expect(res.body.data.verification_id).to.be.a('string');
-                const verification_id = res.body.data.verification_id;
-                this.request.post('/api/verify_signup')
-                    .send({ verification_id })
-                    .expect(200, (err, res) => {
-                        if (err) {
-                            console.error('Errory while verifying test user', err);
-                            throw err;
-                        }
-                        const user = res.body.data.user;
-                        expect(user.user_name).to.equal(testUser.user_name);
-                        done();
-                    });
-            });
+
+    describe('User functions', function () {
+        it('GET /api/user should respond with 404 given an undefined user_id', function (done) {
+            this.request.get('/api/user?user_id=')
+                .expect('Content-Type', /json/)
+                .expect(404, function (err, res) {
+                    expect(res.body).to.deep.equal(notFoundError);
+                    done(err);
+                });
+        });
+
+        it('GET /api/user should respond with 200 and test user', function (done) {
+            this.request.get(`/api/user?user_id=${this.testData.user.user_id}`)
+                .expect(200, (err, res) => {
+                    const { user_name, email, user_id, password } = res.body.data.user;
+                    expect(user_id).to.be.equal(this.testData.user.user_id);
+                    expect(user_name).to.be.equal(this.testData.user.user_name);
+                    expect(email).to.be.undefined;
+                    expect(password).to.be.undefined;
+                    done(err);
+                });
+        });
     });
-        
-    
-    after(function () {
-      mongoose.disconnect((err, res) => {
-          if (err) {
-              return console.error('Error while disconnecting from database', err);
-              throw err;
-          }
-      });
-    });
-            
-    it('should respond with 404', function (done) {
-        this.request.get('/api/user?user_id=')
-            .expect('Content-Type', /json/)
-            .expect(404, function (err, res) {
-                expect(res.body).to.deep.equal(notFoundError);
-                done();
-            });
-    });
-    
-    it('should respond with 200 and test user', function (done) {
-        this.request.get(`/api/user?user_id=${testUser.user_id}`)
-            .expect(200, function (err, res) {
-                const { user_name, email } = res.body.data.user;
- 
-                expect(user_id).to.be.equal(testUser.user_id);
-                expect(user_name).to.be.equal(testUser.user_name);
-                expect(email).to.be.equal(testUser.email);
-                done();
-            });
-    });
+
 });

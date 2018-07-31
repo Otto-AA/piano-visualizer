@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const expect = require('chai').expect;
 
 const express = require('express');
-const { notFoundError } = require('./ErrorResponse');
+const { notFoundError } = require('./Response');
 
 describe('Router: user', function () {
     before(function (done) {
@@ -45,7 +45,7 @@ describe('Router: user', function () {
             .expect('Content-Type', /json/)
             .expect(404, function (err, res) {
                 expect(res.body).to.deep.equal(notFoundError);
-                done();
+                done(err);
             });
     });
 
@@ -61,7 +61,7 @@ describe('Router: user', function () {
             .expect('Content-Type', /json/)
             .expect(200, function (err, res) {
                 expect(res.body.data.user).to.deep.equal(userData);
-                done();
+                done(err);
             });
 
     })

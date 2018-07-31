@@ -2,7 +2,7 @@ const express = require('express')
 const uuidv1 = require('uuid/v1');
 const User = require('../db/models/User');
 const SignupVerification = require('../db/models/SignupVerification');
-const { SuccessResponse, ErrorResponse, unexpectedError, loginRequiredError, notFoundError } = require('./ErrorResponse');
+const { SuccessResponse, Response, unexpectedError, loginRequiredError, notFoundError } = require('./Response');
 
 const router = express.Router();
 
@@ -28,14 +28,14 @@ router.post('/signup', (req, res) => {
             // MongoDB duplicate key error
             if (err.code === 11000) {
                 return res.status(409)
-                    .send(ErrorResponse({
+                    .send(Response({
                         code: 409,
-                        message: 'Verification is already pending',
+                        message: 'User already existing',
                     }));
             }
             if (err.name === 'ValidationError') {
                 return res.status(400)
-                    .send(ErrorResponse({
+                    .send(Response({
                         code: 400,
                         message: 'Invalid arguments',
                         detail: err
@@ -55,9 +55,9 @@ router.post('/verify_signup', async (req, res) => {
         const userData = await SignupVerification.findById(verification_id).exec();
 
         if (!userData) {
-            return res.status(403)
-                .send(ErrorResponse({
-                    code: 403,
+            return res.status(400)
+                .send(Response({
+                    code: 400,
                     message: 'Invalid verification_id'
                 }));
         }
@@ -68,25 +68,24 @@ router.post('/verify_signup', async (req, res) => {
             password: userData.password
         });
 
-        user.save()
-            .then((user) => {
-                res.status(200).send(SuccessResponse({ data: { user } }));
-                SignupVerification.findByIdAndRemove(verification_id).exec();
-            })
-            .catch(err => {
-                // MongoDB duplicate key error
-                if (err.code === 11000) {
-                    return res.status(409)
-                        .send(ErrorResponse({
-                            code: 409,
-                            message: 'User with the same id/email already existing',
-                        }));
-                }
-                
-                console.error('Unexpected error', err);
-                return res.status(500)
-                    .send(unexpectedError);
-            });
+        try {
+            await user.save();
+            // verification is deleted asynchronously as it isn't important to succeed
+            SignupVerification.findByIdAndRemove(verification_id).exec();
+            return res.status(200).send(SuccessResponse({ data: { user } }));
+        }
+        catch (err) {
+            // MongoDB duplicate key error
+            if (err.code === 11000) {
+                return res.status(409)
+                    .send(Response({
+                        code: 409,
+                        message: 'User with the same id/email already existing',
+                    }));
+            }
+
+            throw err;
+        }
     }
     catch (err) {
         console.error(err);
@@ -132,6 +131,13 @@ router.get('/user', function (req, res) {
             return res.status(404)
                 .send(notFoundError);
         }
+
+        // Only send user_id and user_name. For more details, more authorization is needed.
+        user = {
+            user_id: user.user_id,
+            user_name: user.user_name
+        };
+        
         return res.status(200).send(SuccessResponse({ data: { user } }));
     });
 });
