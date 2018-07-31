@@ -15,6 +15,13 @@ mongoose.connect(mongo_url, (err) => {
 });
 
 describe('Integration test: API', function () {
+    const testUser = {
+        "user_id": "____default_user____",
+      "user_name": "____default_user____",
+      "description": "It's a me, Mario!",
+      "email": "user@example.com",
+      "password": "myPass007"
+    };
     before(function (done) {
         // Create an express application object
         const app = express();
@@ -34,6 +41,30 @@ describe('Integration test: API', function () {
         done();
     });
     
+    before(function deleteTestUser(done)  {
+        this.request.delete(`/api/user?user_id=${testUser.user_id}`)
+            .then(() => done())
+            .catch(() => done());
+    });
+    
+    before(function createTestUser(done) {
+        this.request.post('/api/signup')
+            .send(testUser)
+            .expect('Content-Type', /json/)
+            .expect(200, (err, res) => {
+                expect(res.body.data.verification_id).to.be.a('string');
+                const verification_id = res.body.data.verification_id;
+                this.request.post('/api/verify_signup')
+                    .send({ verification_id })
+                    .expect(200, (err, res) => {
+                        const user = res.body.data.user;
+                        expect(user.user_name).to.equal(testUser.user_name);
+                        done();
+                    });
+            });
+    });
+        
+    
     after(function () {
       mongoose.disconnect((err, res) => {
           if (err) {
@@ -42,31 +73,21 @@ describe('Integration test: API', function () {
           }
       });
     });
-
-    describe('Signup test user', function () {
-        const testUser = {
-          "user_name": "Fritz",
-          "description": "It's a me, Mario!",
-          "email": "user@example.com",
-          "password": "myPass007"
-        };
-        
-        it ('should respond with 200 and verification_id', function (done) {
-            this.request.post('/api/signup')
-                .send(testUser)
-                .expect('Content-Type', /json/)
-                .expect(200, function (err, res) {
-                    expect(res.body.data.verification_id).to.be.a('string');
-                    done();
-                });
-        });
-    });
             
     it('should respond with 404', function (done) {
-        this.request.get('/api/user')
+        this.request.get('/api/user?user_id=')
             .expect('Content-Type', /json/)
             .expect(404, function (err, res) {
                 expect(res.body).to.deep.equal(notFoundError);
+                done();
+            });
+    });
+    
+    it('should respond with 200 and test user', function (done) {
+        this.request.get(`/api/user?user_id=${testUser.user_id}`)
+            .expect(200, function (err, res) {
+                console.log(res.body);
+                expect(res.body.data.user).to.be.an('object');
                 done();
             });
     });
