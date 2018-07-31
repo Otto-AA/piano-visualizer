@@ -15,7 +15,7 @@ function connect () {
     });
 }
 
-function disconnect = mongoose.disconnect;
+const disconnect = mongoose.disconnect;
 
 function logDatabase() {
     User.find()
