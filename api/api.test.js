@@ -12,7 +12,6 @@ mongoose.connect(mongo_url, (err) => {
         console.error('Error while connecting database', err);
         throw err;
     }
-    console.log('Connected to database');
 });
 
 describe('Integration test: API', function () {
@@ -39,8 +38,8 @@ describe('Integration test: API', function () {
       mongoose.disconnect((err, res) => {
           if (err) {
               return console.error('Error while disconnecting from database', err);
+              throw err;
           }
-          return console.log('Disconnected from database', res);
       });
     });
 
@@ -55,8 +54,9 @@ describe('Integration test: API', function () {
         it ('should respond with 200 and verification_id', function (done) {
             this.request.post('/api/signup')
                 .send(testUser)
+                .expect('Content-Type', /json/)
                 .expect(200, function (err, res) {
-                    console.log('signup response', res);
+                    expect(res.body.verification_id).to.be.a('string');
                     done();
                 });
         });
