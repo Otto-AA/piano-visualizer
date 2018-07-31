@@ -2,7 +2,7 @@ const express = require('express')
 const uuidv1 = require('uuid/v1');
 const User = require('../db/models/User');
 const SignupVerification = require('../db/models/SignupVerification');
-const { ErrorResponse, unexpectedError, loginRequiredError, notFoundError } = require('./ErrorResponse');
+const { SuccessResponse, ErrorResponse, unexpectedError, loginRequiredError, notFoundError } = require('./ErrorResponse');
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.post('/signup', (req, res) => {
 
     // Save verification to database
     verification.save()
-        .then(val => res.send(verification_id))
+        .then(val => res.send(SuccessResponse({ verification_id }))
         .catch(err => {
             // MongoDB duplicate key error
             if (err.code === 11000) {
@@ -70,7 +70,7 @@ router.post('/verify_user', async (req, res) => {
 
         user.save()
             .then((user) => {
-                res.status(200).send(user);
+                res.status(200).send(SuccessResponse({ user }));
                 SignupVerification.findByIdAndRemove(verification_id).exec();
             })
             .catch(err => {
@@ -100,7 +100,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     User.validateCredentials(email, password)
         .then(user => {
-            res.send(user);
+            res.send(SuccessResponse({ user });
         })
         .catch(err => res.status(403).send(err));
 });
@@ -117,7 +117,7 @@ router.delete('/user', async (req, res) => {
             return res.status(404).send('no user found');
         }
 
-        return res.status(200).send('user deleted');
+        return res.status(200).send(SuccessResponse());
     });
 });
 
@@ -132,7 +132,7 @@ router.get('/user', function (req, res) {
             return res.status(404)
                 .send(notFoundError);
         }
-        return res.status(200).send(user);
+        return res.status(200).send(SuccessResponse({ user }));
     });
 });
 
