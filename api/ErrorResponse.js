@@ -1,3 +1,20 @@
+// TODO: Rename file
+function SuccessResponse({ code, data = {} }) {
+    if (typeof code !== 'number') {
+        throw new Error('Invalid success code');
+    }
+    if (typeof data !== 'object') {
+        throw new Error('Invalid success data');
+    }
+    const message = 'success';
+    
+    return {
+        code,
+        message,
+        data
+    }
+});
+
 function ErrorResponse({ code, message, detail = {} }) {
     if (typeof code !== 'number') {
         throw new Error('Invalid error code');
@@ -30,6 +47,7 @@ const notFoundError = ErrorResponse({
 });
 
 module.exports = {
+    SuccessResponse,
     ErrorResponse,
     unexpectedError,
     loginRequiredError,
