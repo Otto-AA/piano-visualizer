@@ -23,7 +23,7 @@ router.post('/signup', (req, res) => {
 
     // Save verification to database
     verification.save()
-        .then(val => res.send(SuccessResponse(200, { verification_id })))
+        .then(val => res.send(SuccessResponse({ data: { verification_id } })))
         .catch(err => {
             // MongoDB duplicate key error
             if (err.code === 11000) {
@@ -70,7 +70,7 @@ router.post('/verify_user', async (req, res) => {
 
         user.save()
             .then((user) => {
-                res.status(200).send(SuccessResponse({ user }));
+                res.status(200).send(SuccessResponse({ data: { user } }));
                 SignupVerification.findByIdAndRemove(verification_id).exec();
             })
             .catch(err => {
@@ -100,7 +100,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     User.validateCredentials(email, password)
         .then(user => {
-            res.send(SuccessResponse({ user }));
+            res.send(SuccessResponse({ data: { user } }));
         })
         .catch(err => res.status(403).send(err));
 });
@@ -132,7 +132,7 @@ router.get('/user', function (req, res) {
             return res.status(404)
                 .send(notFoundError);
         }
-        return res.status(200).send(SuccessResponse({ user }));
+        return res.status(200).send(SuccessResponse({ data: { user } }));
     });
 });
 
