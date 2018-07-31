@@ -33,7 +33,7 @@ describe('Integration test: API', function () {
           if (err) {
               return console.error('Error while disconnecting from database', err);
           }
-          return console.log('Disconnected from database', res))
+          return console.log('Disconnected from database', res);
       });
     });
 
