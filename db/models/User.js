@@ -34,6 +34,14 @@ userSchema.path('user_name').set(function (user_name) {
 
 // Encrypt password
 userSchema.path('password').set(password_encryption.encrypt);
+userSchema.virtual('user_id').get(function () { return this._id; });
+
+schema.set('toObject', {
+    getters: true,
+    transform: function(...args) {
+        console.log('Calling toJSON transform', [...args]);
+    }
+});
 
 
 // Static functions
@@ -53,6 +61,9 @@ userSchema.statics.validateCredentials = function (email, password) {
         });
     });
 };
+
+userSchema.statics.findById = function (user_id) {
+    return this.findById
 
 function userNameToId(user_name) {
     return user_name.toLowerCase().replace(/[^\w]/g, '');
