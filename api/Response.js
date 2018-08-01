@@ -35,11 +35,21 @@ const notFoundError = Response({
     code: 404,
     message: 'Requested resource was not found'
 });
+const invalidCredentialsError = Response({
+    code: 403,
+    message: 'Invalid credentials'
+});
+const invalidArgumentsError = Response({
+    code: 400,
+    message: 'Invalid arguments'
+});
 
 module.exports = {
     SuccessResponse,
     Response,
     unexpectedError,
     loginRequiredError,
-    notFoundError
+    notFoundError,
+    invalidCredentialsError,
+    invalidArgumentsError
 };

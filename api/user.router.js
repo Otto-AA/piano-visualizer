@@ -2,7 +2,8 @@ const express = require('express')
 const uuidv1 = require('uuid/v1');
 const User = require('../db/models/User');
 const SignupVerification = require('../db/models/SignupVerification');
-const { SuccessResponse, Response, unexpectedError, loginRequiredError, notFoundError } = require('./Response');
+const { SuccessResponse, Response, unexpectedError, invalidCredentialsError, loginRequiredError, invalidArgumentsError, notFoundError } = require('./Response');
+const passport = require('passport');
 
 const router = express.Router();
 
@@ -92,17 +93,35 @@ router.post('/verify_signup', async (req, res) => {
         return res.status(500)
             .send(unexpectedError);
     }
-    
+
 });
 
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    User.validateCredentials(email, password)
-        .then(user => {
-            res.send(SuccessResponse({ data: { user } }));
-        })
-        .catch(err => res.status(403).send(err));
+router.post('/login', function (req, res, next) {
+    passport.authenticate('local', function (err, user, info) {
+        if (err) {
+            console.error(err);
+            return res.status(500).send(unexpectedError);
+        }
+        if (!user) {
+            return res.status(403).send(invalidCredentialsError);
+        }
+        req.logIn(user, function (err) {
+            if (err) {
+                // TODO: Update this error message
+                console.error(err);
+                return res.status(500).send(unexpectedError);
+            }
+            return res.status(200).send(Response({ data: { user } }));
+        });
+    })(req, res, next);
 });
+
+router.get('/current_user', passport.authenticate('local'), function (req, res, next) {
+    console.log('req.user', req.user);
+    console.log('req')
+    res.status(500).send('Not implemented');
+});
+
 
 router.delete('/user', async (req, res) => {
     const { user_id } = req.query;
@@ -137,7 +156,7 @@ router.get('/user', function (req, res) {
             user_id: user.user_id,
             user_name: user.user_name
         };
-        
+
         return res.status(200).send(SuccessResponse({ data: { user } }));
     });
 });

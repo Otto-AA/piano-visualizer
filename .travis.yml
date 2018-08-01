@@ -5,5 +5,7 @@ services:
   - mongodb
 env:
   - MONGO_URL=mongodb://localhost:27017/test
+  - DOMAIN=https://piano-visualizer.herokuapp.com/
+  - SESSION_SECRET=cats
 before_script:
   - sleep 15
