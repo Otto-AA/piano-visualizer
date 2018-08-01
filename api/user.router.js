@@ -8,6 +8,15 @@ const passport = require('passport');
 const router = express.Router();
 
 
+function isAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+
+    return res.status(401)
+        .send(loginRequiredError);
+}
+
 router.get('/', (req, res) => {
     res.send('Cookie party!');
 });
@@ -96,30 +105,25 @@ router.post('/verify_signup', async (req, res) => {
 
 });
 
-router.post('/login', function (req, res, next) {
-    passport.authenticate('local', function (err, user, info) {
-        if (err) {
-            console.error(err);
-            return res.status(500).send(unexpectedError);
-        }
-        if (!user) {
-            return res.status(403).send(invalidCredentialsError);
-        }
-        req.logIn(user, function (err) {
-            if (err) {
-                // TODO: Update this error message
-                console.error(err);
-                return res.status(500).send(unexpectedError);
-            }
-            return res.status(200).send(Response({ data: { user } }));
-        });
-    })(req, res, next);
-});
+router.post('/login', passport.authenticate('local', { failWithError: true }),
+    function (req, res, next) {
+        // Successful login
+        const user = req.user;
 
-router.get('/current_user', passport.authenticate('local'), function (req, res, next) {
-    console.log('req.user', req.user);
-    console.log('req')
-    res.status(500).send('Not implemented');
+        return res.status(200)
+            .send(Response({ data: { user } }));
+    },
+    function(err, req, res, next) {
+        // Login error
+        return res.status(401)
+            .send(invalidCredentialsError);
+    }
+);
+
+router.get('/current_user', isAuthenticated, function (req, res, next) {
+    const user = req.user;
+    return res.status(200)
+        .send(SuccessResponse({ data: { user } }));
 });
 
 

@@ -2,6 +2,10 @@
 require('dotenv').load();
 
 const express = require('express');
+const sessionConfig = require('../config/session');
+const passportConfig = require('../config/passport');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const supertest = require('supertest');
 const proxyquire = require('proxyquire');
 const expect = require('chai').expect;
@@ -22,6 +26,13 @@ before(function setApi() {
 
     // Create an express application object
     const app = express();
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+    app.use(bodyParser.json());
+    app.use(cookieParser());
+    sessionConfig(app);
+    passportConfig(app);
 
     const route = proxyquire('../api/api', {});
 
@@ -37,6 +48,7 @@ before(function setLoginFunctions() {
                     email: this.testData.user.email,
                     password: this.testData.user.password
                 })
+                //.expect('set-cookie', /connect.sid/)
                 .expect(200, (err, res) => {
                     const { user_name } = res.body.data.user;
                     expect(user_name).to.equal(this.testData.user.user_name);

@@ -84,14 +84,16 @@ describe('Integration test: API', function () {
                     return done(err);
                 });
         });
-        it('POST /api/login should respond with 403 given invalid login credentials', function (done) {
+        it('POST /api/login should respond with 401 given invalid login credentials', function (done) {
             this.api
                 .post('/api/login')
                 .send({
                     email: 'invalid',
                     password: '1234'
                 })
-                .expect(403, (err, res) => {
+                .expect(401, (err, res) => {
+                    if (err) return done(err);
+
                     expect(res.body).to.deep.equal(invalidCredentialsError);
                     done(err);
                 });
@@ -119,20 +121,20 @@ describe('Integration test: API', function () {
                     done(err);
                 });
         });
-/* Login not yet working (no cookie stored)
-        it('GET /api/current_user should respond with 200 and test user', async function (done) {
+        it('GET /api/current_user should respond with 200 and test user', async function () {
             await this.login();
 
-            this.api
-                .get('/api/current_user')
-                .expect(200, (err, res) => {
-                    if (err) return done(err);
+            return new Promise((resolve, reject) => {
+                this.api
+                    .get('/api/current_user')
+                    .expect(200, (err, res) => {
+                        if (err) return reject(err);
 
-                    const { user_name } = res.body.data.user;
-                    expect(user_name).to.equal(this.testData.user.user_name);
-                    return done(err);
-                });
+                        const { user_name } = res.body.data.user;
+                        expect(user_name).to.equal(this.testData.user.user_name);
+                        return resolve();
+                    });
+            });
         });
-*/
     });
 });
