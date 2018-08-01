@@ -4,28 +4,9 @@ const supertest = require('supertest');
 const expect = require('chai').expect;
 
 const express = require('express');
-const { notFoundError } = require('./Response');
+const { notFoundError, invalidCredentialsError, invalidArgumentsError } = require('./Response');
 
 describe('Integration test: API', function () {
-    before(function (done) {
-        // Create an express application object
-        const app = express();
-
-        // Get our router module, with a stubbed out User dependency
-        // we stub this out so we can control the results returned by
-        // the User module to ensure we execute all paths in our code
-        const route = proxyquire('./api.js', {
-        });
-
-        // Bind a route to our application
-        route('/api', app);
-
-        // Get a supertest instance so we can make requests
-        this.request = supertest(app);
-
-        done();
-    });
-
     describe('Signup Process', function () {
         it('POST /api/signup should get verification_id and verify user with it', function (done) {
             // Change user_name and email to prevent conflicts
@@ -35,7 +16,7 @@ describe('Integration test: API', function () {
             newUser.email = 'new.user@mail.com';
 
             // Get verification_id
-            this.request
+            this.api
                 .post('/api/signup')
                 .send(newUser)
                 .expect(200, (err, res) => {
@@ -45,7 +26,7 @@ describe('Integration test: API', function () {
                     expect(verification_id).to.be.a('string');
 
                     // Verify user
-                    this.request
+                    this.api
                         .post('/api/verify_signup')
                         .send({ verification_id })
                         .expect(200, (err, res) => {
@@ -60,7 +41,7 @@ describe('Integration test: API', function () {
             let invalidInput = this.testData.user;
             delete invalidInput.email;
 
-            this.request
+            this.api
                 .post('/api/signup')
                 .send(invalidInput)
                 .expect(400, function (err, res) {
@@ -70,7 +51,7 @@ describe('Integration test: API', function () {
                 });
         });
         it('POST /api/verify_signup should return 400 given an invalid verification_id', function (done) {
-            this.request
+            this.api
                 .post('/api/verify_signup')
                 .send({ verification_id: 'invalid' })
                 .expect(400, (err, res) => {
@@ -78,7 +59,7 @@ describe('Integration test: API', function () {
                 });
         });
         // it('POST /api/signup should respond with 409 if user already exists', function (done) {
-        //     this.request
+        //     this.api
         //         .post('/api/signup')
         //         .send(this.testData.user)
         //         .expect(409, function (err, res) {
@@ -89,9 +70,39 @@ describe('Integration test: API', function () {
         // });
     });
 
+    describe('Login functions', function () {
+        it('POST /api/login should respond with 200 given valid login credentials', function (done) {
+            this.api
+                .post('/api/login')
+                .send({
+                    email: this.testData.user.email,
+                    password: this.testData.user.password
+                })
+                .expect(200, (err, res) => {
+                    const { user_name } = res.body.data.user;
+                    expect(user_name).to.equal(this.testData.user.user_name);
+                    return done(err);
+                });
+        });
+        it('POST /api/login should respond with 401 given invalid login credentials', function (done) {
+            this.api
+                .post('/api/login')
+                .send({
+                    email: 'invalid',
+                    password: '1234'
+                })
+                .expect(401, (err, res) => {
+                    if (err) return done(err);
+
+                    expect(res.body).to.deep.equal(invalidCredentialsError);
+                    done(err);
+                });
+        });
+        // TODO: Check if cookies are stored and loginRequired functions can be accessed
+    });
     describe('User functions', function () {
         it('GET /api/user should respond with 404 given an undefined user_id', function (done) {
-            this.request.get('/api/user?user_id=')
+            this.api.get('/api/user?user_id=')
                 .expect('Content-Type', /json/)
                 .expect(404, function (err, res) {
                     expect(res.body).to.deep.equal(notFoundError);
@@ -100,7 +111,7 @@ describe('Integration test: API', function () {
         });
 
         it('GET /api/user should respond with 200 and test user', function (done) {
-            this.request.get(`/api/user?user_id=${this.testData.user.user_id}`)
+            this.api.get(`/api/user?user_id=${this.testData.user.user_id}`)
                 .expect(200, (err, res) => {
                     const { user_name, email, user_id, password } = res.body.data.user;
                     expect(user_id).to.be.equal(this.testData.user.user_id);
@@ -110,6 +121,20 @@ describe('Integration test: API', function () {
                     done(err);
                 });
         });
-    });
+        it('GET /api/current_user should respond with 200 and test user', async function () {
+            await this.login();
 
+            return new Promise((resolve, reject) => {
+                this.api
+                    .get('/api/current_user')
+                    .expect(200, (err, res) => {
+                        if (err) return reject(err);
+
+                        const { user_name } = res.body.data.user;
+                        expect(user_name).to.equal(this.testData.user.user_name);
+                        return resolve();
+                    });
+            });
+        });
+    });
 });

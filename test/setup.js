@@ -2,6 +2,10 @@
 require('dotenv').load();
 
 const express = require('express');
+const sessionConfig = require('../config/session');
+const passportConfig = require('../config/passport');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const supertest = require('supertest');
 const proxyquire = require('proxyquire');
 const expect = require('chai').expect;
@@ -11,20 +15,55 @@ const SignupVerification = require('../db/models/SignupVerification');
 const { getTestData } = require('./testData');
 
 
-// Create an express application object
-const app = express();
-
-const route = proxyquire('../api/api', {});
-
-// Bind a route to our application
-route('/api', app);
-
-const api = supertest(app);
-
-
 before(function connectDatabase() {
     const mongo_url = 'mongodb://localhost:27017/piano_visualizer_test_db'
     return mongoose.connect(mongo_url);
+});
+before(function setApi() {
+
+    // Create an express application object
+    const app = express();
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+    app.use(bodyParser.json());
+    app.use(cookieParser());
+    sessionConfig(app);
+    passportConfig(app);
+
+    const route = proxyquire('../api/api', {});
+
+    // Bind a route to our application
+    route('/api', app);
+    this.api = supertest.agent(app);
+});
+before(function setLoginFunctions() {
+    this.login = () => {
+        return new Promise((resolve, reject) => {
+            this.api.post('/api/login')
+                .send({
+                    email: this.testData.user.email,
+                    password: this.testData.user.password
+                })
+                //.expect('set-cookie', /connect.sid/)
+                .expect(200, (err, res) => {
+                    const { user_name } = res.body.data.user;
+                    expect(user_name).to.equal(this.testData.user.user_name);
+                    expect(err).to.be.null;
+                    return resolve();
+                });
+        });
+    };
+    this.logout = () => {
+        return new Promise((resolve, reject) => {
+            this.api.post('/api/login')
+                .send()
+                .expect(200, (err, res) => {
+                    expect(err).to.be.null;
+                    return resolve();
+                });
+        });
+    };
 });
 beforeEach(async function emptyCollections() {
     return Promise.all([
@@ -36,13 +75,13 @@ beforeEach(function setTestData() {
     this.testData = getTestData();
 });
 beforeEach(function addTestUser(done) {
-    api.post('/api/signup')
+    this.api.post('/api/signup')
         .send(this.testData.user)
         .expect('Content-Type', /json/)
         .expect(200, (err, res) => {
             expect(res.body.data.verification_id).to.be.a('string');
             const verification_id = res.body.data.verification_id;
-            api.post('/api/verify_signup')
+            this.api.post('/api/verify_signup')
                 .send({ verification_id })
                 .expect(200, (err, res) => {
                     if (err) {
@@ -54,6 +93,9 @@ beforeEach(function addTestUser(done) {
                     done();
                 });
         });
+});
+beforeEach(function login() {
+    return this.login();
 });
 
 after(function disconnectDatabase(done) {

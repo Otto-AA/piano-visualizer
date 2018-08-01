@@ -2,10 +2,20 @@ const express = require('express')
 const uuidv1 = require('uuid/v1');
 const User = require('../db/models/User');
 const SignupVerification = require('../db/models/SignupVerification');
-const { SuccessResponse, Response, unexpectedError, loginRequiredError, notFoundError } = require('./Response');
+const { SuccessResponse, Response, unexpectedError, invalidCredentialsError, loginRequiredError, invalidArgumentsError, notFoundError } = require('./Response');
+const passport = require('passport');
 
 const router = express.Router();
 
+
+function isAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+
+    return res.status(401)
+        .send(loginRequiredError);
+}
 
 router.get('/', (req, res) => {
     res.send('Cookie party!');
@@ -92,17 +102,30 @@ router.post('/verify_signup', async (req, res) => {
         return res.status(500)
             .send(unexpectedError);
     }
-    
+
 });
 
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    User.validateCredentials(email, password)
-        .then(user => {
-            res.send(SuccessResponse({ data: { user } }));
-        })
-        .catch(err => res.status(403).send(err));
+router.post('/login', passport.authenticate('local', { failWithError: true }),
+    function (req, res, next) {
+        // Successful login
+        const user = req.user;
+
+        return res.status(200)
+            .send(Response({ data: { user } }));
+    },
+    function(err, req, res, next) {
+        // Login error
+        return res.status(401)
+            .send(invalidCredentialsError);
+    }
+);
+
+router.get('/current_user', isAuthenticated, function (req, res, next) {
+    const user = req.user;
+    return res.status(200)
+        .send(SuccessResponse({ data: { user } }));
 });
+
 
 router.delete('/user', async (req, res) => {
     const { user_id } = req.query;
@@ -137,7 +160,6 @@ router.get('/user', function (req, res) {
             user_id: user.user_id,
             user_name: user.user_name
         };
-        
         return res.status(200).send(SuccessResponse({ data: { user } }));
     });
 });
