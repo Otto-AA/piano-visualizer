@@ -45,7 +45,6 @@ before(function setLoginFunctions() {
                     email: this.testData.user.email,
                     password: this.testData.user.password
                 })
-                //.expect('set-cookie', /connect.sid/)
                 .expect(200, (err, res) => {
                     const { user_name } = res.body.data.user;
                     expect(user_name).to.equal(this.testData.user.user_name);

@@ -120,6 +120,12 @@ router.post('/login', passport.authenticate('local', { failWithError: true }),
     }
 );
 
+router.post('/logout', function(req, res) {
+    req.logout();
+    return res.status(200)
+        .send(SuccessResponse());
+});
+
 router.get('/current_user', isAuthenticated, function (req, res, next) {
     const user = req.user;
     return res.status(200)

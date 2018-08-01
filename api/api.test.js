@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const expect = require('chai').expect;
 
 const express = require('express');
-const { notFoundError, invalidCredentialsError, invalidArgumentsError } = require('./Response');
+const { notFoundError, invalidCredentialsError, invalidArgumentsError, loginRequiredError } = require('./Response');
 
 describe('Integration test: API', function () {
     describe('Signup Process', function () {
@@ -98,7 +98,29 @@ describe('Integration test: API', function () {
                     done(err);
                 });
         });
-        // TODO: Check if cookies are stored and loginRequired functions can be accessed
+        it('POST /api/logout should return 200 and 401 on GET /api/current_user', async function () {
+            // Ensure the user is logged in before testing logout
+            await this.login();
+
+            // Logout
+            return new Promise((resolve, reject) => {
+                this.api
+                    .post('/api/logout')
+                    .expect(200, (err, res) => {
+                        if (err) return reject(err);
+
+                        // Test if /api/current_user (which requires to be logged in) throws 401
+                        this.api
+                            .get('/api/current_user')
+                            .expect(401, (err, res) => {
+                                if (err) return reject(err);
+
+                                expect(res.body).to.deep.equal(loginRequiredError);
+                                resolve();
+                            });
+                    });
+            });
+        });
     });
     describe('User functions', function () {
         it('GET /api/user should respond with 404 given an undefined user_id', function (done) {
