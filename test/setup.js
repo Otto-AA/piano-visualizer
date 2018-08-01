@@ -15,9 +15,6 @@ const SignupVerification = require('../db/models/SignupVerification');
 const { getTestData } = require('./testData');
 
 
-
-
-
 before(function connectDatabase() {
     const mongo_url = 'mongodb://localhost:27017/piano_visualizer_test_db'
     return mongoose.connect(mongo_url);

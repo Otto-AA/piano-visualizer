@@ -160,7 +160,6 @@ router.get('/user', function (req, res) {
             user_id: user.user_id,
             user_name: user.user_name
         };
-
         return res.status(200).send(SuccessResponse({ data: { user } }));
     });
 });
