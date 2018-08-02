@@ -21,8 +21,28 @@ router.get('/', (req, res) => {
     res.send('Cookie party!');
 });
 
-router.post('/signup', (req, res) => {
+router.post('/signup', async (req, res) => {
     const { user_name, email, password } = req.body;
+    
+    // TODO: Update errorOccurred functionality
+    let errorOccurred = true;
+    await User.findOne({
+        $or: [ { user_name }, { email } ]
+    }, (err, user) => {
+        if (err) {
+            console.error('Unexpected error', new Error(err));
+            return res.status(500)
+                .send(unexpectedError);
+        }
+        if (user) {
+            return res.status(409)
+                .send(Response({ code: 409, message: 'username or email already in use' }));
+        }
+        errorOccurred = false;
+    });
+    if (errorOccurred) {
+        return;
+    }
     const verification_id = uuidv1();
     const verification = new SignupVerification({
         verification_id,

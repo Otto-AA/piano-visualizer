@@ -40,6 +40,8 @@ describe('Integration test: API', function () {
         it('POST /api/signup should respond with 400 given invalid input', function (done) {
             let invalidInput = this.testData.user;
             delete invalidInput.email;
+            // Change user_name so we don't get a 409 conflict
+            invalidInput.user_name = 'definitely not existing user';
 
             this.api
                 .post('/api/signup')
@@ -55,19 +57,19 @@ describe('Integration test: API', function () {
                 .post('/api/verify_signup')
                 .send({ verification_id: 'invalid' })
                 .expect(400, (err, res) => {
-                    done(err);
+                    return done(err);
                 });
         });
-        // it('POST /api/signup should respond with 409 if user already exists', function (done) {
-        //     this.api
-        //         .post('/api/signup')
-        //         .send(this.testData.user)
-        //         .expect(409, function (err, res) {
-        //             const { message } = res.body;
-        //             expect(message).to.equal('User already existing');
-        //             done();
-        //         });
-        // });
+        it('POST /api/signup should respond with 409 if user already exists', function (done) {
+            this.api
+                .post('/api/signup')
+                .send(this.testData.user)
+                .expect(409, (err, res) => {
+                    const { message } = res.body;
+                    expect(message).to.equal('username or email already in use');
+                    return done(err);
+                });
+        });
     });
 
     describe('Login functions', function () {
