@@ -55,6 +55,7 @@ before(function setAddTestUserFunction() {
 
                             const user = res.body.data.user;
                             expect(user.user_name).to.equal(testUser.user_name);
+                            console.log('Added test user', user);
                             return resolve();
                         });
                 });
