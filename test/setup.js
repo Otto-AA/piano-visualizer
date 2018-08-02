@@ -37,32 +37,47 @@ before(function setApi() {
     route('/api', app);
     this.api = supertest.agent(app);
 });
+before(function setAddTestUserFunction() {
+    this.addTestUser = async (testUser = this.testData.user) => {
+        let verification_id;
+        await this.api.post('/api/signup')
+            .send(testUser)
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then(res => {
+                expect(res.body.data.verification_id).to.be.a('string');
+                verification_id = res.body.data.verification_id;
+            });
+
+        await this.api.post('/api/verify_signup')
+            .send({ verification_id })
+            .expect(200)
+            .then(res => {
+                const { user } = res.body.data;
+                expect(user.user_name).to.equal(testUser.user_name);
+            });
+        return true;
+    };
+});
 before(function setLoginFunctions() {
-    this.login = () => {
-        return new Promise((resolve, reject) => {
-            this.api.post('/api/login')
-                .send({
-                    email: this.testData.user.email,
-                    password: this.testData.user.password
-                })
-                .expect(200, (err, res) => {
-                    const { user_name } = res.body.data.user;
-                    expect(user_name).to.equal(this.testData.user.user_name);
-                    expect(err).to.be.null;
-                    return resolve();
-                });
-        });
+    this.login = async (user = this.testData.user) => {
+        return this.api.post('/api/login')
+            .send({
+                email: user.email,
+                password: user.password
+            })
+            .expect(200)
+            .then(res => {                
+                const { user_name } = res.body.data.user;
+                expect(user_name).to.equal(this.testData.user.user_name);
+            });
     };
-    this.logout = () => {
-        return new Promise((resolve, reject) => {
-            this.api.post('/api/login')
-                .send()
-                .expect(200, (err, res) => {
-                    expect(err).to.be.null;
-                    return resolve();
-                });
-        });
+    this.logout = async () => {
+        return this.api.post('/api/login')
+            .send()
+            .expect(200);
     };
+    this.addTestUserAndLogin = (user = this.testData.user) => this.addTestUser(user).then(() => this.login(user));
 });
 beforeEach(async function emptyCollections() {
     return Promise.all([
@@ -72,29 +87,6 @@ beforeEach(async function emptyCollections() {
 });
 beforeEach(function setTestData() {
     this.testData = getTestData();
-});
-beforeEach(function addTestUser(done) {
-    this.api.post('/api/signup')
-        .send(this.testData.user)
-        .expect('Content-Type', /json/)
-        .expect(200, (err, res) => {
-            expect(res.body.data.verification_id).to.be.a('string');
-            const verification_id = res.body.data.verification_id;
-            this.api.post('/api/verify_signup')
-                .send({ verification_id })
-                .expect(200, (err, res) => {
-                    if (err) {
-                        console.error('Error while verifying test user', err);
-                        throw err;
-                    }
-                    const user = res.body.data.user;
-                    expect(user.user_name).to.equal(this.testData.user.user_name);
-                    done();
-                });
-        });
-});
-beforeEach(function login() {
-    return this.login();
 });
 
 after(function disconnectDatabase(done) {
