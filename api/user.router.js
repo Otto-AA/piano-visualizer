@@ -174,7 +174,8 @@ router.delete('/user', async (req, res) => {
     }
     
     await User.findOneAndRemove({ email }, (err, user) => {
-        if (err || !user) {
+        if (err) {
+            console.error('Unexpected error', err);
             return res.status(500)
                 .send(unexpectedError);
         }
