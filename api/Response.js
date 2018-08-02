@@ -28,7 +28,7 @@ const unexpectedError = Response({
     message: 'Unexpected error'
 });
 const loginRequiredError = Response({
-    code: 403,
+    code: 401,
     message: 'login required'
 });
 const notFoundError = Response({
@@ -36,7 +36,7 @@ const notFoundError = Response({
     message: 'Requested resource was not found'
 });
 const invalidCredentialsError = Response({
-    code: 403,
+    code: 401,
     message: 'Invalid credentials'
 });
 const invalidArgumentsError = Response({

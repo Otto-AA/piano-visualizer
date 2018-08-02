@@ -80,10 +80,9 @@ before(function setLoginFunctions() {
     this.addTestUserAndLogin = (user = this.testData.user) => this.addTestUser(user).then(() => this.login(user));
 });
 beforeEach(async function emptyCollections() {
-    return Promise.all([
-        User.find().remove(),
-        SignupVerification.find().remove()
-    ]);
+    await User.find().remove();
+    await SignupVerification.find().remove();
+    return;
 });
 beforeEach(function setTestData() {
     this.testData = getTestData();

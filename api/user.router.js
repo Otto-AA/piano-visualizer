@@ -21,18 +21,16 @@ router.get('/', (req, res) => {
     res.send('Cookie party!');
 });
 
-router.post('/signup', async (req, res) => {
+router.post('/signup', async (req, res, next) => {
     const { user_name, email, password } = req.body;
-    
+
     // TODO: Update errorOccurred functionality
     let errorOccurred = true;
     await User.findOne({
-        $or: [ { user_name }, { email } ]
+        $or: [{ user_name }, { email }]
     }, (err, user) => {
         if (err) {
-            console.error('Unexpected error', new Error(err));
-            return res.status(500)
-                .send(unexpectedError);
+            throw err;
         }
         if (user) {
             return res.status(409)
@@ -72,57 +70,47 @@ router.post('/signup', async (req, res) => {
                     }));
             }
 
-            console.error('Unexpected error', new Error(err));
-            return res.status(500)
-                .send(unexpectedError);
+            throw err;
         });
 });
 
 router.post('/verify_signup', async (req, res) => {
     const { verification_id } = req.body;
 
-    try {
-        const userData = await SignupVerification.findById(verification_id).exec();
+    const userData = await SignupVerification.findById(verification_id).exec();
 
-        if (!userData) {
-            return res.status(400)
+    if (!userData) {
+        return res.status(400)
+            .send(Response({
+                code: 400,
+                message: 'Invalid verification_id'
+            }));
+    }
+
+    const user = new User({
+        user_name: userData.user_name,
+        email: userData.email,
+        password: userData.password
+    });
+
+    try {
+        await user.save();
+        // verification is deleted asynchronously as it isn't important to succeed
+        SignupVerification.findByIdAndRemove(verification_id).exec();
+        return res.status(200).send(SuccessResponse({ data: { user } }));
+    }
+    catch (err) {
+        // MongoDB duplicate key error
+        if (err.code === 11000) {
+            return res.status(409)
                 .send(Response({
-                    code: 400,
-                    message: 'Invalid verification_id'
+                    code: 409,
+                    message: 'User with the same id/email already existing',
                 }));
         }
 
-        const user = new User({
-            user_name: userData.user_name,
-            email: userData.email,
-            password: userData.password
-        });
-
-        try {
-            await user.save();
-            // verification is deleted asynchronously as it isn't important to succeed
-            SignupVerification.findByIdAndRemove(verification_id).exec();
-            return res.status(200).send(SuccessResponse({ data: { user } }));
-        }
-        catch (err) {
-            // MongoDB duplicate key error
-            if (err.code === 11000) {
-                return res.status(409)
-                    .send(Response({
-                        code: 409,
-                        message: 'User with the same id/email already existing',
-                    }));
-            }
-
-            throw err;
-        }
+        throw err;
     }
-    catch (err) {
-        console.error(err);
-        return res.status(500)
-            .send(unexpectedError);
-    }
-
 });
 
 router.post('/login', passport.authenticate('local', { failWithError: true }),
@@ -133,14 +121,14 @@ router.post('/login', passport.authenticate('local', { failWithError: true }),
         return res.status(200)
             .send(Response({ data: { user } }));
     },
-    function(err, req, res, next) {
+    function (err, req, res, next) {
         // Login error
         return res.status(401)
             .send(invalidCredentialsError);
     }
 );
 
-router.post('/logout', function(req, res) {
+router.post('/logout', function (req, res) {
     req.logout();
     return res.status(200)
         .send(SuccessResponse());
@@ -155,28 +143,22 @@ router.get('/current_user', isAuthenticated, function (req, res, next) {
 
 router.delete('/user', async (req, res) => {
     const { email, password } = req.query;
+
+    // Require credentials
     try {
-        // Require credentials
-        // TODO: Change to object instead of positional parameters in User.js and passportjs
-        await User.validateCredentials(email, password);
+        await User.validateCredentials({ email, password });
     }
     catch (err) {
-        if (err === 'invalid email') {
-            return res.status(404).send(notFoundError);
-        }
-        else if (err === 'Invalid password') {
+        if (err.message === 'Invalid credentials') {
             return res.status(401).send(invalidCredentialsError);
         }
-        else {
-            console.error('Unexpected error', err);
-            return res.status(500).send(unexpectedError);
-        }
+
+        throw err;
     }
-    
+
     await User.findOneAndRemove({ email }, (err, user) => {
-        if (err || !user) {
-            return res.status(500)
-                .send(unexpectedError);
+        if (err) {
+            throw err;
         }
         return res.status(200).send(SuccessResponse());
     });
@@ -186,8 +168,7 @@ router.get('/user', function (req, res) {
     const { user_id } = req.query;
     User.findById(user_id, (err, user) => {
         if (err) {
-            return res.status(500)
-                .send(unexpectedError);
+            throw err;
         }
         if (!user) {
             return res.status(404)
