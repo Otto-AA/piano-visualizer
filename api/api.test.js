@@ -18,7 +18,7 @@ describe('Integration test: API', function () {
                 .expect(200)
                 .expect(res => expect(res.body.data.verification_id).to.be.a('string'))
                 .then(res => res.body.data.verification_id);
-            
+
             // Verify user
             return this.api
                 .post('/api/verify_signup')
@@ -43,7 +43,7 @@ describe('Integration test: API', function () {
         it('POST /api/signup should respond with 409 if user already exists', async function () {
             // Add test user to database
             await this.addTestUser();
-            
+
             // Try to signup with the same user data
             return this.api
                 .post('/api/signup')
@@ -59,10 +59,10 @@ describe('Integration test: API', function () {
         });
     });
 
-    describe('Login functions', function () {
+    describe('Login', function () {
         it('POST /api/login should respond with 200 given valid login credentials', async function () {
             await this.addTestUser();
-            
+
             return this.api
                 .post('/api/login')
                 .send({
@@ -82,6 +82,8 @@ describe('Integration test: API', function () {
                 .expect(401)
                 .expect(res => expect(res.body).to.deep.equal(invalidCredentialsError));
         });
+    });
+    describe('Logout', function () {
         it('POST /api/logout should return 200 and 401 on GET /api/current_user', async function () {
             // Ensure the user is logged in before testing logout
             await this.addTestUserAndLogin();
@@ -98,7 +100,17 @@ describe('Integration test: API', function () {
                 .expect(res => expect(res.body).to.deep.equal(loginRequiredError));
         });
     });
-    describe('User functions', function () {
+    describe('GET /api/current_user', function () {
+        it('GET /api/current_user should respond with 200 and test user', async function () {
+            await this.addTestUserAndLogin();
+
+            return this.api
+                .get('/api/current_user')
+                .expect(200)
+                .expect(res => expect(res.body.data.user.user_name).to.equal(this.testData.user.user_name));
+        });
+    });
+    describe('GET /api/user', function () {
         it('GET /api/user should respond with 404 given an nonexistent user_id', async function () {
             return this.api.get('/api/user?user_id=definitely_nonexisting')
                 .expect('Content-Type', /json/)
@@ -108,7 +120,7 @@ describe('Integration test: API', function () {
 
         it('GET /api/user should respond with 200 and test user', async function () {
             await this.addTestUser();
-            
+
             return this.api.get(`/api/user?user_id=${this.testData.user.user_id}`)
                 .expect(200)
                 .expect(res => {
@@ -119,6 +131,8 @@ describe('Integration test: API', function () {
                     expect(password).to.be.undefined;
                 });
         });
+    });
+    describe('DElETE /api/user', function() {
         it('DELETE /api/user should respond with 200 and prevent further logins with this user', async function () {
             await this.addTestUser();
             const credentials = {
@@ -130,7 +144,7 @@ describe('Integration test: API', function () {
                 .delete('/api/user')
                 .query(credentials)
                 .expect(200);
-           
+
             // Test if user is deleted
             return this.api
                 .post('/api/login')
@@ -145,16 +159,6 @@ describe('Integration test: API', function () {
                     password: 'none',
                 })
                 .expect(404)
-        });
-                    
-                
-        it('GET /api/current_user should respond with 200 and test user', async function () {
-            await this.addTestUserAndLogin();
-
-            return this.api
-                .get('/api/current_user')
-                .expect(200)
-                .expect(res => expect(res.body.data.user.user_name).to.equal(this.testData.user.user_name));
         });
     });
 });
