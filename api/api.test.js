@@ -16,7 +16,7 @@ describe('Integration test: API', function () {
                 .post('/api/signup')
                 .send(testUser)
                 .expect(200)
-                .expect(res => expect(verification_id).to.be.a('string'))
+                .expect(res => expect(res.body.data.verification_id).to.be.a('string'))
                 .then(res => res.body.data.verification_id);
             
             // Verify user
