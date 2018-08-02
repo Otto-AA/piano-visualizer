@@ -154,7 +154,7 @@ router.get('/current_user', isAuthenticated, function (req, res, next) {
 
 
 router.delete('/user', async (req, res) => {
-    console.log/'DELETE /user');
+    console.log('DELETE /user');
     console.log('query', req.query);
     const { email, password } = req.query;
     try {
