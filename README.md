@@ -1,5 +1,6 @@
-# piano-visualizer [![Travis Build passing](https://travis-ci.org/Otto-AA/piano-visualizer.svg?branch=master)](https://travis-ci.org/Otto-AA/piano-visualizer)
-Website for creating visualizations by a mp3 and midi file
+# piano-visualizer [WIP] [![Travis Build passing](https://travis-ci.org/Otto-AA/piano-visualizer.svg?branch=master)](https://travis-ci.org/Otto-AA/piano-visualizer)
+Website for creating visualizations by a mp3 and midi file.
+Online at: https://piano-visualizer.herokuapp.com/
 
 ## About
 This aim of this project is to provide easy tools for creating good looking and useful visualizations of piano recordings.
