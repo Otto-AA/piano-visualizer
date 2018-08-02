@@ -154,17 +154,32 @@ router.get('/current_user', isAuthenticated, function (req, res, next) {
 
 
 router.delete('/user', async (req, res) => {
-    const { user_id } = req.query;
-
-    User.findByIdAndRemove(user_id, (err, user) => {
-        if (err) {
+    const { email, password } = req.query;
+    try {
+        // Require credentials
+        await User.validateCredentials({
+            email,
+            password
+        });
+    }
+    catch (err) {
+        if (err === 'invalid email') {
+            return res.status(404).send(notFoundError);
+        }
+        else if (err === 'Invalid password') {
+            return res.status(401).send(invalidCredentialsError);
+        }
+        else {
+            console.error('Unexpected error', err);
+            return res.status(500).send(unexpectedError);
+        }
+    }
+    
+    await User.findOneAndRemove({ email }, (err, user) => {
+        if (err || !user) {
             return res.status(500)
                 .send(unexpectedError);
         }
-        if (!user) {
-            return res.status(404).send('no user found');
-        }
-
         return res.status(200).send(SuccessResponse());
     });
 });
