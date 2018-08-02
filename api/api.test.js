@@ -119,7 +119,7 @@ describe('Integration test: API', function () {
                     expect(password).to.be.undefined;
                 });
         });
-        it('DELETE /api/user should respond with 200', async function () {
+        it('DELETE /api/user should respond with 200 and prevent further logins with this user', async function () {
             await this.addTestUser();
             const credentials = {
                 email: this.testData.user.email,
