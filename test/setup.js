@@ -40,7 +40,7 @@ before(function setApi() {
 before(function setAddTestUserFunction() {
     this.addTestUser = (testUser = this.testData.user) => {
         this.api.post('/api/signup')
-            .send(user)
+            .send(testUser)
             .expect('Content-Type', /json/)
             .expect(200, (err, res) => {
                 if (err) return done(err);
