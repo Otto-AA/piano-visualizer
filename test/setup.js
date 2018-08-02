@@ -64,6 +64,28 @@ before(function setLoginFunctions() {
         });
     };
 });
+beforeEach(function setAddTestUserFunction(done) {
+    this.addTestUser = (testUser) => {
+        this.api.post('/api/signup')
+            .send(user)
+            .expect('Content-Type', /json/)
+            .expect(200, (err, res) => {
+                if (err) return done(err);
+            
+                expect(res.body.data.verification_id).to.be.a('string');
+                const verification_id = res.body.data.verification_id;
+                this.api.post('/api/verify_signup')
+                    .send({ verification_id })
+                    .expect(200, (err, res) => {
+                        if (err) return done(err);
+                
+                        const user = res.body.data.user;
+                        expect(user.user_name).to.equal(testUser.user_name);
+                        return done();
+                    });
+            });
+    };
+});
 beforeEach(async function emptyCollections() {
     return Promise.all([
         User.find().remove(),
