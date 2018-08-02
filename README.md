@@ -1,4 +1,4 @@
-# piano-visualizer
+# piano-visualizer [![Travis Build passing](https://travis-ci.org/Otto-AA/piano-visualizer.svg?branch=master)](https://travis-ci.org/Otto-AA/piano-visualizer)
 Website for creating visualizations by a mp3 and midi file
 
 ## About
