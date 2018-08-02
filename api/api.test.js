@@ -7,73 +7,55 @@ const express = require('express');
 const { notFoundError, invalidCredentialsError, invalidArgumentsError, loginRequiredError } = require('./Response');
 
 describe('Integration test: API', function () {
-    describe('Signup Process', function () {
-        it('POST /api/signup should get verification_id and verify user with it', function (done) {
-            // Change user_name and email to prevent conflicts
-            const newUser = this.testData.user;
+    describe('Signup Process', async function () {
+        it('POST /api/signup should get verification_id and verify user with it', async function () {
+            const testUser = this.testData.user;
 
             // Get verification_id
-            this.api
+            const verification_id = await this.api
                 .post('/api/signup')
-                .send(newUser)
-                .expect(200, (err, res) => {
-                    if (err) return done(err);
-
-                    const { verification_id } = res.body.data;
-                    expect(verification_id).to.be.a('string');
-
-                    // Verify user
-                    this.api
-                        .post('/api/verify_signup')
-                        .send({ verification_id })
-                        .expect(200, (err, res) => {
-                            const { user_id, user_name } = res.body.data.user;
-                            expect(user_id).to.equal(newUser.user_id);
-                            expect(user_name).to.equal(newUser.user_name);
-                            done(err);
-                        })
+                .send(testUser)
+                .expect(200)
+                .expect(res => expect(verification_id).to.be.a('string'))
+                .then(res => res.body.data.verification_id);
+            
+            // Verify user
+            return this.api
+                .post('/api/verify_signup')
+                .send({ verification_id })
+                .expect(200)
+                .expect(res => {
+                    const { user_id, user_name } = res.body.data.user;
+                    expect(user_id).to.equal(testUser.user_id);
+                    expect(user_name).to.equal(testUser.user_name);
                 });
         });
-        it('POST /api/signup should respond with 400 given invalid input', function (done) {
+        it('POST /api/signup should respond with 400 given invalid input', async function () {
             let invalidInput = this.testData.user;
             delete invalidInput.email;
-            // Change user_name so we don't get a 409 conflict
-            invalidInput.user_name = 'definitely not existing user';
 
-            this.api
+            return this.api
                 .post('/api/signup')
                 .send(invalidInput)
-                .expect(400, function (err, res) {
-                    const { message } = res.body;
-                    expect(message).to.equal('Invalid arguments');
-                    done(err);
-                });
+                .expect(400)
+                .expect(res => expect(res.body.message).to.equal('Invalid arguments'));
         });
-        it('POST /api/verify_signup should return 400 given an invalid verification_id', function (done) {
-            this.api
+        it('POST /api/verify_signup should return 400 given an invalid verification_id', async function () {
+            return this.api
                 .post('/api/verify_signup')
                 .send({ verification_id: 'invalid' })
-                .expect(400, (err, res) => {
-                    return done(err);
-                });
+                .expect(400);
         });
         it('POST /api/signup should respond with 409 if user already exists', async function () {
             // Add test user to database
             await this.addTestUser();
             
             // Try to signup with the same user data
-            return new Promise((resolve, reject) => {
-                this.api
-                    .post('/api/signup')
-                    .send(this.testData.user)
-                    .expect(409, (err, res) => {
-                        if (err) return reject(err);
-                    
-                        const { message } = res.body;
-                        expect(message).to.equal('username or email already in use');
-                        return resolve();
-                    });
-            });
+            return this.api
+                .post('/api/signup')
+                .send(this.testData.user)
+                .expect(409)
+                .expect(res => expect(res.body.message).to.equal('username or email already in use'));
         });
     });
 
