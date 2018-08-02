@@ -159,10 +159,7 @@ router.delete('/user', async (req, res) => {
     const { email, password } = req.query;
     try {
         // Require credentials
-        await User.validateCredentials({
-            email,
-            password
-        });
+        await User.validateCredentials(email, password);
     }
     catch (err) {
         if (err === 'invalid email') {
