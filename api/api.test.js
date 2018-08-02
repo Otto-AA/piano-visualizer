@@ -76,7 +76,7 @@ describe('Integration test: API', function () {
     });
 
     describe('Login functions', function () {
-        it('POST /api/login should respond with 200 given valid login credentials', async function (done) {
+        it('POST /api/login should respond with 200 given valid login credentials', async function () {
             await this.addTestUser();
             
             return new Promise((resolve, reject) => {
@@ -143,7 +143,7 @@ describe('Integration test: API', function () {
                 });
         });
 
-        it('GET /api/user should respond with 200 and test user', async function (done) {
+        it('GET /api/user should respond with 200 and test user', async function () {
             await this.addTestUser();
             
             return new Promise((resolve, reject) => {
