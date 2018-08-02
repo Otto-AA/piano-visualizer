@@ -60,33 +60,22 @@ before(function setAddTestUserFunction() {
     };
 });
 before(function setLoginFunctions() {
-    this.login = (user = this.testData.user) => {
-        return new Promise((resolve, reject) => {
-            this.api.post('/api/login')
-                .send({
-                    email: user.email,
-                    password: user.password
-                })
-                .expect(200, (err, res) => {
-                    if (err) return reject(err);
-                
-                    const { user_name } = res.body.data.user;
-                    expect(user_name).to.equal(this.testData.user.user_name);
-                    expect(err).to.be.null;
-                    return resolve();
-                });
-        });
+    this.login = async (user = this.testData.user) => {
+        return this.api.post('/api/login')
+            .send({
+                email: user.email,
+                password: user.password
+            })
+            .expect(200)
+            .then(res => {                
+                const { user_name } = res.body.data.user;
+                expect(user_name).to.equal(this.testData.user.user_name);
+            });
     };
-    this.logout = () => {
-        return new Promise((resolve, reject) => {
-            this.api.post('/api/login')
-                .send()
-                .expect(200, (err, res) => {
-                    if (err) return reject(err);
-               
-                    return resolve();
-                });
-        });
+    this.logout = async () => {
+        return this.api.post('/api/login')
+            .send()
+            .expect(200);
     };
     this.addTestUserAndLogin = (user = this.testData.user) => this.addTestUser(user).then(() => this.login(user));
 });
