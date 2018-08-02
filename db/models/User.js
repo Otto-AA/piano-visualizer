@@ -62,6 +62,7 @@ userSchema.statics.validateCredentials = function (email, password) {
         });
     });
 };
+userSchema.statics.userNameToId = userNameToId;
 
 function userNameToId(user_name) {
     return user_name.toLowerCase().replace(/[^\w]/g, '');
