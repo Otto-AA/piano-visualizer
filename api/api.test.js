@@ -7,6 +7,7 @@ const express = require('express');
 const { notFoundError, invalidCredentialsError, invalidArgumentsError, loginRequiredError } = require('./Response');
 
 describe('Integration test: API', function () {
+    
     describe('Signup Process', async function () {
         it('POST /api/signup should get verification_id and verify user with it', async function () {
             const testUser = this.testData.user;
@@ -83,6 +84,7 @@ describe('Integration test: API', function () {
                 .expect(res => expect(res.body).to.deep.equal(invalidCredentialsError));
         });
     });
+
     describe('Logout', function () {
         it('POST /api/logout should return 200 and 401 on GET /api/current_user', async function () {
             // Ensure the user is logged in before testing logout
@@ -100,6 +102,7 @@ describe('Integration test: API', function () {
                 .expect(res => expect(res.body).to.deep.equal(loginRequiredError));
         });
     });
+
     describe('GET /api/current_user', function () {
         it('GET /api/current_user should respond with 200 and test user', async function () {
             await this.addTestUserAndLogin();
@@ -109,19 +112,22 @@ describe('Integration test: API', function () {
                 .expect(200)
                 .expect(res => expect(res.body.data.user.user_name).to.equal(this.testData.user.user_name));
         });
-    });
-    describe('GET /api/user', function () {
-        it('GET /api/user should respond with 404 given an nonexistent user_id', async function () {
-            return this.api.get('/api/user?user_id=definitely_nonexisting')
-                .expect('Content-Type', /json/)
-                .expect(404)
-                .expect(res => expect(res.body).to.deep.equal(notFoundError));
-        });
-
-        it('GET /api/user should respond with 200 and test user', async function () {
+        it('GET /api/current_user should respond with 401 without login', async function () {
             await this.addTestUser();
 
-            return this.api.get(`/api/user?user_id=${this.testData.user.user_id}`)
+            return this.api
+                .get('/api/current_user')
+                .expect(401)
+                .expect(res => expect(res.body).to.deep.equal(loginRequiredError));
+        });
+    });
+
+    describe('GET /api/user', function () {
+        it('GET /api/user should respond with 200 and test user', async function () {
+            await this.addTestUser();
+    
+            return this.api.get('/api/user')
+                .query({ user_id: this.testData.user.user_id })
                 .expect(200)
                 .expect(res => {
                     const { user_id, user_name, email, password } = res.body.data.user;
@@ -131,7 +137,14 @@ describe('Integration test: API', function () {
                     expect(password).to.be.undefined;
                 });
         });
+        it('GET /api/user should respond with 404 given an nonexistent user_id', async function () {
+            return this.api.get('/api/user?user_id=definitely_nonexisting')
+                .expect('Content-Type', /json/)
+                .expect(404)
+                .expect(res => expect(res.body).to.deep.equal(notFoundError));
+        });
     });
+
     describe('DElETE /api/user', function() {
         it('DELETE /api/user should respond with 200 and prevent further logins with this user', async function () {
             await this.addTestUser();
@@ -151,14 +164,15 @@ describe('Integration test: API', function () {
                 .send(credentials)
                 .expect(401);
         });
-        it('DELETE /api/user should respond with 404 given invalid credentials', async function () {
+        it('DELETE /api/user should respond with 401 given invalid credentials', async function () {
             return this.api
                 .delete('/api/user')
                 .query({
                     email: 'none',
                     password: 'none',
                 })
-                .expect(404)
+                .expect(401)
+                .expect(res => expect(res.body).to.deep.equal(invalidCredentialsError));
         });
     });
 });

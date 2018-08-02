@@ -150,7 +150,7 @@ router.delete('/user', async (req, res) => {
     }
     catch (err) {
         if (err.message === 'Invalid credentials') {
-            return res.status(404).send(invalidCredentialsError);
+            return res.status(401).send(invalidCredentialsError);
         }
 
         throw err;

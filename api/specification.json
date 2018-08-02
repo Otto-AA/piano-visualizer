@@ -88,6 +88,44 @@
         }
       }
     },
+    "/login" : {
+      "post" : {
+        "tags" : [ "users" ],
+        "summary" : "login",
+        "operationId" : "login",
+        "description" : "login and store user_id in session",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UserCredentials"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/User"
+          },
+          "401" : {
+            "$ref" : "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/logout" : {
+      "post" : {
+        "tags" : [ "users" ],
+        "summary" : "logout",
+        "operationId" : "logout",
+        "description" : "logout from the current session",
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/Success"
+          }
+        }
+      }
+    },
     "/user" : {
       "get" : {
         "tags" : [ "users" ],
@@ -126,46 +164,8 @@
           "200" : {
             "$ref" : "#/components/responses/Success"
           },
-          "403" : {
+          "401" : {
             "$ref" : "#/components/responses/Unauthorized"
-          }
-        }
-      }
-    },
-    "/login" : {
-      "post" : {
-        "tags" : [ "users" ],
-        "summary" : "login",
-        "operationId" : "login",
-        "description" : "login and store user_id in session",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/UserCredentials"
-              }
-            }
-          }
-        },
-        "responses" : {
-          "200" : {
-            "$ref" : "#/components/responses/User"
-          },
-          "403" : {
-            "$ref" : "#/components/responses/Unauthorized"
-          }
-        }
-      }
-    },
-    "/logout" : {
-      "post" : {
-        "tags" : [ "users" ],
-        "summary" : "logout",
-        "operationId" : "logout",
-        "description" : "logout from the current session",
-        "responses" : {
-          "200" : {
-            "$ref" : "#/components/responses/Success"
           }
         }
       }
@@ -180,7 +180,7 @@
           "200" : {
             "$ref" : "#/components/responses/User"
           },
-          "403" : {
+          "401" : {
             "$ref" : "#/components/responses/LoginRequired"
           }
         }
@@ -235,7 +235,7 @@
           "400" : {
             "$ref" : "#/components/responses/InvalidArguments"
           },
-          "403" : {
+          "401" : {
             "$ref" : "#/components/responses/LoginRequired"
           },
           "404" : {
@@ -274,7 +274,7 @@
           "200" : {
             "$ref" : "#/components/responses/Success"
           },
-          "403" : {
+          "401" : {
             "$ref" : "#/components/responses/LoginRequired"
           },
           "404" : {
@@ -303,7 +303,7 @@
           "400" : {
             "$ref" : "#/components/responses/InvalidArguments"
           },
-          "403" : {
+          "401" : {
             "$ref" : "#/components/responses/LoginRequired"
           }
         }
@@ -329,7 +329,7 @@
           "400" : {
             "$ref" : "#/components/responses/InvalidArguments"
           },
-          "403" : {
+          "401" : {
             "$ref" : "#/components/responses/Unauthorized"
           },
           "404" : {
@@ -377,7 +377,7 @@
           "400" : {
             "$ref" : "#/components/responses/InvalidArguments"
           },
-          "403" : {
+          "401" : {
             "$ref" : "#/components/responses/LoginRequired"
           },
           "404" : {
@@ -397,7 +397,7 @@
           "200" : {
             "$ref" : "#/components/responses/Success"
           },
-          "403" : {
+          "401" : {
             "$ref" : "#/components/responses/LoginRequired"
           },
           "404" : {
@@ -426,7 +426,7 @@
           "400" : {
             "$ref" : "#/components/responses/InvalidArguments"
           },
-          "403" : {
+          "401" : {
             "$ref" : "#/components/responses/LoginRequired"
           },
           "404" : {
@@ -455,10 +455,6 @@
           "user_name" : {
             "type" : "string",
             "example" : "Fritz"
-          },
-          "description" : {
-            "type" : "string",
-            "example" : "It's a me, Mario!"
           },
           "email" : {
             "type" : "string",
@@ -492,9 +488,6 @@
             "type" : "string"
           },
           "user_name" : {
-            "type" : "string"
-          },
-          "description" : {
             "type" : "string"
           }
         }
@@ -550,37 +543,16 @@
       "Design" : {
         "type" : "object"
       },
-      "Error" : {
+      "ApiResponse" : {
         "type" : "object",
         "required" : [ "code", "message" ],
         "properties" : {
           "code" : {
-            "type" : "string"
+            "type" : "integer",
+            "format" : "int32"
           },
           "message" : {
             "type" : "string"
-          }
-        }
-      },
-      "InvalidArguments" : {
-        "type" : "object",
-        "required" : [ "code", "message", "requiredArguments", "invalidArguments" ],
-        "properties" : {
-          "code" : {
-            "type" : "string"
-          },
-          "message" : {
-            "type" : "string"
-          },
-          "requiredArguments" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          },
-          "invalidArguments" : {
-            "type" : "object",
-            "description" : "keys are the invalid arguments, values an information message"
           }
         }
       }
@@ -681,14 +653,7 @@
         "content" : {
           "application/json" : {
             "schema" : {
-              "type" : "object",
-              "required" : [ "message" ],
-              "properties" : {
-                "message" : {
-                  "type" : "string",
-                  "description" : "describes the performed action"
-                }
-              }
+              "$ref" : "#/components/schemas/ApiResponse"
             }
           }
         }
@@ -698,7 +663,7 @@
         "content" : {
           "application/json" : {
             "schema" : {
-              "$ref" : "#/components/schemas/InvalidArguments"
+              "$ref" : "#/components/schemas/ApiResponse"
             }
           }
         }
@@ -708,7 +673,7 @@
         "content" : {
           "application/json" : {
             "schema" : {
-              "$ref" : "#/components/schemas/Error"
+              "$ref" : "#/components/schemas/ApiResponse"
             }
           }
         }
@@ -718,7 +683,7 @@
         "content" : {
           "application/json" : {
             "schema" : {
-              "$ref" : "#/components/schemas/Error"
+              "$ref" : "#/components/schemas/ApiResponse"
             }
           }
         }
@@ -728,7 +693,7 @@
         "content" : {
           "application/json" : {
             "schema" : {
-              "$ref" : "#/components/schemas/Error"
+              "$ref" : "#/components/schemas/ApiResponse"
             }
           }
         }
