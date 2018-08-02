@@ -111,7 +111,7 @@ describe('Integration test: API', function () {
         });
         it('POST /api/logout should return 200 and 401 on GET /api/current_user', async function () {
             // Ensure the user is logged in before testing logout
-            await this.login();
+            await this.addTestUserAndLogin();
 
             // Logout
             return new Promise((resolve, reject) => {
@@ -161,7 +161,7 @@ describe('Integration test: API', function () {
             });
         });
         it('GET /api/current_user should respond with 200 and test user', async function () {
-            await this.login();
+            await this.addTestUserAndLogin();
 
             return new Promise((resolve, reject) => {
                 this.api
