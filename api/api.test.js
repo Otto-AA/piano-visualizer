@@ -125,7 +125,7 @@ describe('Integration test: API', function () {
             return this.api
                 .get('/api/current_user')
                 .expect(200)
-                .expect(res => expect(res.body.data.useruser_name).to.equal(this.testData.user.user_name));
+                .expect(res => expect(res.body.data.user.user_name).to.equal(this.testData.user.user_name));
         });
     });
 });
