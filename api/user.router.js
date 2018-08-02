@@ -22,8 +22,11 @@ router.get('/', (req, res) => {
 });
 
 router.post('/signup', async (req, res) => {
+    console.log('/signup');
     const { user_name, email, password } = req.body;
     
+    // TODO: Update errorOccurred functionality
+    let errorOccurred = true;
     await User.findOne({
         $or: [ { user_name }, { email } ]
     }, (err, user) => {
@@ -33,11 +36,15 @@ router.post('/signup', async (req, res) => {
                 .send(unexpectedError);
         }
         if (user) {
+            console.log('Returning 409', user);
             return res.status(409)
                 .send(Response({ code: 409, message: 'username or email already in use' }));
         }
+        errorOccurred = false;
     });
-        
+    if (errorOccurred) {
+        return;
+    }
     const verification_id = uuidv1();
     const verification = new SignupVerification({
         verification_id,
