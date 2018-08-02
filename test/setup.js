@@ -37,34 +37,7 @@ before(function setApi() {
     route('/api', app);
     this.api = supertest.agent(app);
 });
-before(function setLoginFunctions() {
-    this.login = (user = this.testData.user) => {
-        return new Promise((resolve, reject) => {
-            this.api.post('/api/login')
-                .send({
-                    email: user.email,
-                    password: user.password
-                })
-                .expect(200, (err, res) => {
-                    const { user_name } = res.body.data.user;
-                    expect(user_name).to.equal(this.testData.user.user_name);
-                    expect(err).to.be.null;
-                    return resolve();
-                });
-        });
-    };
-    this.logout = () => {
-        return new Promise((resolve, reject) => {
-            this.api.post('/api/login')
-                .send()
-                .expect(200, (err, res) => {
-                    expect(err).to.be.null;
-                    return resolve();
-                });
-        });
-    };
-});
-beforeEach(function setAddTestUserFunction() {
+before(function setAddTestUserFunction() {
     this.addTestUser = (testUser = this.testData.user) => {
         this.api.post('/api/signup')
             .send(user)
@@ -86,6 +59,37 @@ beforeEach(function setAddTestUserFunction() {
             });
     };
 });
+before(function setLoginFunctions() {
+    this.login = (user = this.testData.user) => {
+        return new Promise((resolve, reject) => {
+            this.api.post('/api/login')
+                .send({
+                    email: user.email,
+                    password: user.password
+                })
+                .expect(200, (err, res) => {
+                    if (err) return reject(err);
+                
+                    const { user_name } = res.body.data.user;
+                    expect(user_name).to.equal(this.testData.user.user_name);
+                    expect(err).to.be.null;
+                    return resolve();
+                });
+        });
+    };
+    this.logout = () => {
+        return new Promise((resolve, reject) => {
+            this.api.post('/api/login')
+                .send()
+                .expect(200, (err, res) => {
+                    if (err) return reject(err);
+               
+                    return resolve();
+                });
+        });
+    };
+    this.addTestUserAndLogin = (user = this.testData.user) => this.addTestUser(user).then(() => this.login(user));
+});
 beforeEach(async function emptyCollections() {
     return Promise.all([
         User.find().remove(),
@@ -94,9 +98,6 @@ beforeEach(async function emptyCollections() {
 });
 beforeEach(function setTestData() {
     this.testData = getTestData();
-});
-beforeEach(function login() {
-    return this.login();
 });
 
 after(function disconnectDatabase(done) {
