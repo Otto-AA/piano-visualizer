@@ -23,11 +23,11 @@ router.get('/', (req, res) => {
 
 router.post('/signup', async (req, res, next) => {
     const { user_name, email, password } = req.body;
-    
+
     // TODO: Update errorOccurred functionality
     let errorOccurred = true;
     await User.findOne({
-        $or: [ { user_name }, { email } ]
+        $or: [{ user_name }, { email }]
     }, (err, user) => {
         if (err) {
             throw err;
@@ -121,14 +121,14 @@ router.post('/login', passport.authenticate('local', { failWithError: true }),
         return res.status(200)
             .send(Response({ data: { user } }));
     },
-    function(err, req, res, next) {
+    function (err, req, res, next) {
         // Login error
         return res.status(401)
             .send(invalidCredentialsError);
     }
 );
 
-router.post('/logout', function(req, res) {
+router.post('/logout', function (req, res) {
     req.logout();
     return res.status(200)
         .send(SuccessResponse());
@@ -143,23 +143,19 @@ router.get('/current_user', isAuthenticated, function (req, res, next) {
 
 router.delete('/user', async (req, res) => {
     const { email, password } = req.query;
+
+    // Require credentials
     try {
-        // Require credentials
-        // TODO: Change to object instead of positional parameters in User.js and passportjs
-        await User.validateCredentials(email, password);
+        await User.validateCredentials({ email, password });
     }
     catch (err) {
-        if (err === 'invalid email') {
-            return res.status(404).send(notFoundError);
+        if (err.message === 'Invalid credentials') {
+            return res.status(404).send(invalidCredentialsError);
         }
-        else if (err === 'Invalid password') {
-            return res.status(401).send(invalidCredentialsError);
-        }
-        else {
-            throw err;
-        }
+
+        throw err;
     }
-    
+
     await User.findOneAndRemove({ email }, (err, user) => {
         if (err) {
             throw err;

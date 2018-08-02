@@ -8,9 +8,15 @@ module.exports = function (app) {
         usernameField: 'email',
         passwordField: 'password'
     }, function (email, password, done) {
-        User.validateCredentials(email, password)
+        User.validateCredentials({ email, password })
             .then(user => done(null, user))
-            .catch(err => done(null, false, { message: err.message }));
+            .catch(err => {
+                if (err.message === 'Invalid credentials') {
+                    return done(null, false, { message: err.message });
+                }
+
+                return done(err);
+            });
     })
     );
 

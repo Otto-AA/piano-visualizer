@@ -47,18 +47,21 @@ userSchema.options.toObject.transform = function (doc, ret, options) {
 
 // Static functions
 //
-userSchema.statics.validateCredentials = function (email, password) {
+userSchema.statics.validateCredentials = function ({ email, password }) {
     return new Promise((resolve, reject) => {
         this.findOne({ email }, (err, user) => {
-            if (err || !user) {
-                return reject('invalid email');
+            if (err) {
+                return reject(new Error('Error while validating credentials'));
+            }
+            if (!user) {
+                return reject(new Error('Invalid credentials'));
             }
 
             if (password_encryption.comparePasswords(password, user.password)) {
                 return resolve(user);
             }
 
-            return reject('Invalid password');
+            return reject(new Error('Invalid credentials'));
         });
     });
 };
