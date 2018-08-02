@@ -43,17 +43,16 @@ before(function setAddTestUserFunction() {
         await this.api.post('/api/signup')
             .send(testUser)
             .expect('Content-Type', /json/)
-            .expect(200, (err, res) => {
-                if (err) throw err;
-
+            .expect(200)
+            .then(res => {
                 expect(res.body.data.verification_id).to.be.a('string');
                 verification_id = res.body.data.verification_id;
             });
+
         await this.api.post('/api/verify_signup')
             .send({ verification_id })
-            .expect(200, (err, res) => {
-                if (err) throw err;
-
+            .expect(200)
+            .then(res => {
                 const { user } = res.body.data;
                 expect(user.user_name).to.equal(testUser.user_name);
             });
