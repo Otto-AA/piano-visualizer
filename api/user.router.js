@@ -154,6 +154,8 @@ router.get('/current_user', isAuthenticated, function (req, res, next) {
 
 
 router.delete('/user', async (req, res) => {
+    console.log/'DELETE /user');
+    console.log('query', req.query);
     const { email, password } = req.query;
     try {
         // Require credentials
@@ -164,6 +166,7 @@ router.delete('/user', async (req, res) => {
     }
     catch (err) {
         if (err === 'invalid email') {
+            console.log('err', err);
             return res.status(404).send(notFoundError);
         }
         else if (err === 'Invalid password') {
@@ -174,8 +177,10 @@ router.delete('/user', async (req, res) => {
             return res.status(500).send(unexpectedError);
         }
     }
-    
+    console.log('findOneAndRemove');
     await User.findOneAndRemove({ email }, (err, user) => {
+        console.log('err', err);
+        console.log('user', user);
         if (err || !user) {
             return res.status(500)
                 .send(unexpectedError);
