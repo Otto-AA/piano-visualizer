@@ -22,7 +22,6 @@ router.get('/', (req, res) => {
 });
 
 router.post('/signup', async (req, res) => {
-    console.log('/signup');
     const { user_name, email, password } = req.body;
     
     // TODO: Update errorOccurred functionality
@@ -36,7 +35,6 @@ router.post('/signup', async (req, res) => {
                 .send(unexpectedError);
         }
         if (user) {
-            console.log('Returning 409', user);
             return res.status(409)
                 .send(Response({ code: 409, message: 'username or email already in use' }));
         }
