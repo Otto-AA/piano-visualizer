@@ -40,12 +40,6 @@ describe('Integration test: API', function () {
                 .expect(400)
                 .expect(res => expect(res.body.message).to.equal('Invalid arguments'));
         });
-        it('POST /api/verify_signup should return 400 given an invalid verification_id', async function () {
-            return this.api
-                .post('/api/verify_signup')
-                .send({ verification_id: 'invalid' })
-                .expect(400);
-        });
         it('POST /api/signup should respond with 409 if user already exists', async function () {
             // Add test user to database
             await this.addTestUser();
@@ -56,6 +50,12 @@ describe('Integration test: API', function () {
                 .send(this.testData.user)
                 .expect(409)
                 .expect(res => expect(res.body.message).to.equal('username or email already in use'));
+        });
+        it('POST /api/verify_signup should return 400 given an invalid verification_id', async function () {
+            return this.api
+                .post('/api/verify_signup')
+                .send({ verification_id: 'invalid' })
+                .expect(400);
         });
     });
 
@@ -99,8 +99,8 @@ describe('Integration test: API', function () {
         });
     });
     describe('User functions', function () {
-        it('GET /api/user should respond with 404 given an undefined user_id', async function () {
-            return this.api.get('/api/user?user_id=')
+        it('GET /api/user should respond with 404 given an nonexistent user_id', async function () {
+            return this.api.get('/api/user?user_id=definitely_nonexisting')
                 .expect('Content-Type', /json/)
                 .expect(404)
                 .expect(res => expect(res.body).to.deep.equal(notFoundError));
@@ -119,6 +119,35 @@ describe('Integration test: API', function () {
                     expect(password).to.be.undefined;
                 });
         });
+        it('DELETE /api/user should respond with 200 and prevent further logins with this user', async function () {
+            await this.addTestUser();
+            const credentials = {
+                email: this.testData.user.email,
+                password: this.testData.user.password
+            };
+            // Delete user
+            await this.api
+                .delete('/api/user')
+                .query(credentials)
+                .expect(200);
+           
+            // Test if user is deleted
+            return this.api
+                .post('/api/login')
+                .send(credentials)
+                .expect(401);
+        });
+        it('DELETE /api/user should respond with 404 given invalid credentials', async function () {
+            return this.api
+                .delete('/api/user')
+                .query({
+                    email: 'none',
+                    password: 'none',
+                })
+                .expect(404)
+        });
+                    
+                
         it('GET /api/current_user should respond with 200 and test user', async function () {
             await this.addTestUserAndLogin();
 
