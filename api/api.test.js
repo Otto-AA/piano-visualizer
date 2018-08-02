@@ -37,6 +37,8 @@ describe('Integration test: API', function () {
         it('POST /api/signup should respond with 400 given invalid input', function (done) {
             let invalidInput = this.testData.user;
             delete invalidInput.email;
+            // Change user_name so we don't get a 409 conflict
+            invalidInput.user_name = 'definitely not existing user';
 
             this.api
                 .post('/api/signup')
