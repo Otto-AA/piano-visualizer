@@ -10,10 +10,7 @@ describe('Integration test: API', function () {
     describe('Signup Process', function () {
         it('POST /api/signup should get verification_id and verify user with it', function (done) {
             // Change user_name and email to prevent conflicts
-            let newUser = this.testData.user;
-            newUser.user_id = 'new_user';
-            newUser.user_name = 'new_user';
-            newUser.email = 'new.user@mail.com';
+            const newUser = this.testData.user;
 
             // Get verification_id
             this.api
@@ -40,8 +37,6 @@ describe('Integration test: API', function () {
         it('POST /api/signup should respond with 400 given invalid input', function (done) {
             let invalidInput = this.testData.user;
             delete invalidInput.email;
-            // Change user_name so we don't get a 409 conflict
-            invalidInput.user_name = 'definitely not existing user';
 
             this.api
                 .post('/api/signup')
@@ -60,31 +55,45 @@ describe('Integration test: API', function () {
                     return done(err);
                 });
         });
-        it('POST /api/signup should respond with 409 if user already exists', function (done) {
-            this.api
-                .post('/api/signup')
-                .send(this.testData.user)
-                .expect(409, (err, res) => {
-                    const { message } = res.body;
-                    expect(message).to.equal('username or email already in use');
-                    return done(err);
-                });
+        it('POST /api/signup should respond with 409 if user already exists', async function () {
+            // Add test user to database
+            await this.addTestUser();
+            
+            // Try to signup with the same user data
+            return new Promise((resolve, reject) => {
+                this.api
+                    .post('/api/signup')
+                    .send(this.testData.user)
+                    .expect(409, (err, res) => {
+                        if (err) return reject(err);
+                    
+                        const { message } = res.body;
+                        expect(message).to.equal('username or email already in use');
+                        return resolve();
+                    });
+            });
         });
     });
 
     describe('Login functions', function () {
-        it('POST /api/login should respond with 200 given valid login credentials', function (done) {
-            this.api
-                .post('/api/login')
-                .send({
-                    email: this.testData.user.email,
-                    password: this.testData.user.password
-                })
-                .expect(200, (err, res) => {
-                    const { user_name } = res.body.data.user;
-                    expect(user_name).to.equal(this.testData.user.user_name);
-                    return done(err);
-                });
+        it('POST /api/login should respond with 200 given valid login credentials', async function (done) {
+            await this.addTestUser();
+            
+            return new Promise((resolve, reject) => {
+                this.api
+                    .post('/api/login')
+                    .send({
+                        email: this.testData.user.email,
+                        password: this.testData.user.password
+                    })
+                    .expect(200, (err, res) => {
+                        if (err) return reject(err);
+                    
+                        const { user_name } = res.body.data.user;
+                        expect(user_name).to.equal(this.testData.user.user_name);
+                        return resolve();
+                    });
+            });
         });
         it('POST /api/login should respond with 401 given invalid login credentials', function (done) {
             this.api
@@ -134,16 +143,22 @@ describe('Integration test: API', function () {
                 });
         });
 
-        it('GET /api/user should respond with 200 and test user', function (done) {
-            this.api.get(`/api/user?user_id=${this.testData.user.user_id}`)
-                .expect(200, (err, res) => {
-                    const { user_name, email, user_id, password } = res.body.data.user;
-                    expect(user_id).to.be.equal(this.testData.user.user_id);
-                    expect(user_name).to.be.equal(this.testData.user.user_name);
-                    expect(email).to.be.undefined;
-                    expect(password).to.be.undefined;
-                    done(err);
-                });
+        it('GET /api/user should respond with 200 and test user', async function (done) {
+            await this.addTestUser();
+            
+            return new Promise((resolve, reject) => {
+                this.api.get(`/api/user?user_id=${this.testData.user.user_id}`)
+                    .expect(200, (err, res) => {
+                        if (err) return reject(err);
+                    
+                        const { user_name, email, user_id, password } = res.body.data.user;
+                        expect(user_id).to.be.equal(this.testData.user.user_id);
+                        expect(user_name).to.be.equal(this.testData.user.user_name);
+                        expect(email).to.be.undefined;
+                        expect(password).to.be.undefined;
+                        return resolve();
+                    });
+            });
         });
         it('GET /api/current_user should respond with 200 and test user', async function () {
             await this.login();
