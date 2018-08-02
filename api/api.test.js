@@ -63,101 +63,69 @@ describe('Integration test: API', function () {
         it('POST /api/login should respond with 200 given valid login credentials', async function () {
             await this.addTestUser();
             
-            return new Promise((resolve, reject) => {
-                this.api
-                    .post('/api/login')
-                    .send({
-                        email: this.testData.user.email,
-                        password: this.testData.user.password
-                    })
-                    .expect(200, (err, res) => {
-                        if (err) return reject(err);
-                    
-                        const { user_name } = res.body.data.user;
-                        expect(user_name).to.equal(this.testData.user.user_name);
-                        return resolve();
-                    });
-            });
+            return this.api
+                .post('/api/login')
+                .send({
+                    email: this.testData.user.email,
+                    password: this.testData.user.password
+                })
+                .expect(200)
+                .expect(res => expect(res.body.data.user.user_name).to.equal(this.testData.user.user_name));
         });
-        it('POST /api/login should respond with 401 given invalid login credentials', function (done) {
-            this.api
+        it('POST /api/login should respond with 401 given invalid login credentials', async function () {
+            return this.api
                 .post('/api/login')
                 .send({
                     email: 'invalid',
                     password: '1234'
                 })
-                .expect(401, (err, res) => {
-                    if (err) return done(err);
-
-                    expect(res.body).to.deep.equal(invalidCredentialsError);
-                    done(err);
-                });
+                .expect(401)
+                .expect(res => expect(res.body).to.deep.equal(invalidCredentialsError));
         });
         it('POST /api/logout should return 200 and 401 on GET /api/current_user', async function () {
             // Ensure the user is logged in before testing logout
             await this.addTestUserAndLogin();
 
             // Logout
-            return new Promise((resolve, reject) => {
-                this.api
-                    .post('/api/logout')
-                    .expect(200, (err, res) => {
-                        if (err) return reject(err);
+            await this.api
+                .post('/api/logout')
+                .expect(200);
 
-                        // Test if /api/current_user (which requires to be logged in) throws 401
-                        this.api
-                            .get('/api/current_user')
-                            .expect(401, (err, res) => {
-                                if (err) return reject(err);
-
-                                expect(res.body).to.deep.equal(loginRequiredError);
-                                resolve();
-                            });
-                    });
-            });
+            // Test if /api/current_user (which requires to be logged in) throws 401
+            return this.api
+                .get('/api/current_user')
+                .expect(401)
+                .expect(res => expect(res.body).to.deep.equal(loginRequiredError));
         });
     });
     describe('User functions', function () {
-        it('GET /api/user should respond with 404 given an undefined user_id', function (done) {
-            this.api.get('/api/user?user_id=')
+        it('GET /api/user should respond with 404 given an undefined user_id', async function () {
+            return this.api.get('/api/user?user_id=')
                 .expect('Content-Type', /json/)
-                .expect(404, function (err, res) {
-                    expect(res.body).to.deep.equal(notFoundError);
-                    done(err);
-                });
+                .expect(404)
+                .expect(res => expect(res.body).to.deep.equal(notFoundError));
         });
 
         it('GET /api/user should respond with 200 and test user', async function () {
             await this.addTestUser();
             
-            return new Promise((resolve, reject) => {
-                this.api.get(`/api/user?user_id=${this.testData.user.user_id}`)
-                    .expect(200, (err, res) => {
-                        if (err) return reject(err);
-                    
-                        const { user_name, email, user_id, password } = res.body.data.user;
-                        expect(user_id).to.be.equal(this.testData.user.user_id);
-                        expect(user_name).to.be.equal(this.testData.user.user_name);
-                        expect(email).to.be.undefined;
-                        expect(password).to.be.undefined;
-                        return resolve();
-                    });
-            });
+            return this.api.get(`/api/user?user_id=${this.testData.user.user_id}`)
+                .expect(200)
+                .expect(res => {
+                    const { user_id, user_name, email, password } = res.body.data.user;
+                    expect(user_id).to.be.equal(this.testData.user.user_id);
+                    expect(user_name).to.be.equal(this.testData.user.user_name);
+                    expect(email).to.be.undefined;
+                    expect(password).to.be.undefined;
+                });
         });
         it('GET /api/current_user should respond with 200 and test user', async function () {
             await this.addTestUserAndLogin();
 
-            return new Promise((resolve, reject) => {
-                this.api
-                    .get('/api/current_user')
-                    .expect(200, (err, res) => {
-                        if (err) return reject(err);
-
-                        const { user_name } = res.body.data.user;
-                        expect(user_name).to.equal(this.testData.user.user_name);
-                        return resolve();
-                    });
-            });
+            return this.api
+                .get('/api/current_user')
+                .expect(200)
+                .expect(res => expect(res.body.data.useruser_name).to.equal(this.testData.user.user_name));
         });
     });
 });
