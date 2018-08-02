@@ -38,12 +38,12 @@ before(function setApi() {
     this.api = supertest.agent(app);
 });
 before(function setLoginFunctions() {
-    this.login = () => {
+    this.login = (user = this.testData.user) => {
         return new Promise((resolve, reject) => {
             this.api.post('/api/login')
                 .send({
-                    email: this.testData.user.email,
-                    password: this.testData.user.password
+                    email: user.email,
+                    password: user.password
                 })
                 .expect(200, (err, res) => {
                     const { user_name } = res.body.data.user;
@@ -64,7 +64,7 @@ before(function setLoginFunctions() {
         });
     };
 });
-beforeEach(function setAddTestUserFunction(done) {
+beforeEach(function setAddTestUserFunction() {
     this.addTestUser = (testUser = this.testData.user) => {
         this.api.post('/api/signup')
             .send(user)
@@ -94,26 +94,6 @@ beforeEach(async function emptyCollections() {
 });
 beforeEach(function setTestData() {
     this.testData = getTestData();
-});
-beforeEach(function addTestUser(done) {
-    this.api.post('/api/signup')
-        .send(this.testData.user)
-        .expect('Content-Type', /json/)
-        .expect(200, (err, res) => {
-            expect(res.body.data.verification_id).to.be.a('string');
-            const verification_id = res.body.data.verification_id;
-            this.api.post('/api/verify_signup')
-                .send({ verification_id })
-                .expect(200, (err, res) => {
-                    if (err) {
-                        console.error('Error while verifying test user', err);
-                        throw err;
-                    }
-                    const user = res.body.data.user;
-                    expect(user.user_name).to.equal(this.testData.user.user_name);
-                    done();
-                });
-        });
 });
 beforeEach(function login() {
     return this.login();
