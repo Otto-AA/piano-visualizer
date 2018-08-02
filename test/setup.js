@@ -39,24 +39,26 @@ before(function setApi() {
 });
 before(function setAddTestUserFunction() {
     this.addTestUser = (testUser = this.testData.user) => {
-        this.api.post('/api/signup')
-            .send(testUser)
-            .expect('Content-Type', /json/)
-            .expect(200, (err, res) => {
-                if (err) return done(err);
-            
-                expect(res.body.data.verification_id).to.be.a('string');
-                const verification_id = res.body.data.verification_id;
-                this.api.post('/api/verify_signup')
-                    .send({ verification_id })
-                    .expect(200, (err, res) => {
-                        if (err) return done(err);
-                
-                        const user = res.body.data.user;
-                        expect(user.user_name).to.equal(testUser.user_name);
-                        return done();
-                    });
-            });
+        return new Promise((resolve, reject) => {      
+            this.api.post('/api/signup')
+                .send(testUser)
+                .expect('Content-Type', /json/)
+                .expect(200, (err, res) => {
+                    if (err) return reject(err);
+
+                    expect(res.body.data.verification_id).to.be.a('string');
+                    const verification_id = res.body.data.verification_id;
+                    this.api.post('/api/verify_signup')
+                        .send({ verification_id })
+                        .expect(200, (err, res) => {
+                            if (err) return reject(err);
+
+                            const user = res.body.data.user;
+                            expect(user.user_name).to.equal(testUser.user_name);
+                            return resolve();
+                        });
+                });
+        });
     };
 });
 before(function setLoginFunctions() {
