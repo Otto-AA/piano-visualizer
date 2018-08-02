@@ -65,7 +65,7 @@ before(function setLoginFunctions() {
     };
 });
 beforeEach(function setAddTestUserFunction(done) {
-    this.addTestUser = (testUser) => {
+    this.addTestUser = (testUser = this.testData.user) => {
         this.api.post('/api/signup')
             .send(user)
             .expect('Content-Type', /json/)
