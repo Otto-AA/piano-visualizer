@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const password_encryption = require('../../lib/password_encryption');
-const { api: logger } = require('../../config/logger');
+const { databaseLogger } = require('../../config/logger');
 
 // User
 //
@@ -52,19 +52,19 @@ userSchema.statics.validateCredentials = function ({ email, password }) {
     return new Promise((resolve, reject) => {
         this.findOne({ email }, (err, user) => {
             if (err) {
-                logger.silly('Unexpected error while validating credentials');
+                databaseLogger.silly('Unexpected error while validating credentials');
                 return reject(new Error('Error while validating credentials'));
             }
             if (!user) {
-                logger.silly('invalid email address');
+                databaseLogger.silly('invalid email address');
                 return reject(new Error('Invalid credentials'));
             }
 
             if (password_encryption.comparePasswords(password, user.password)) {
-                logger.silly('invalid password');
                 return resolve(user);
             }
 
+            databaseLogger.silly('invalid password');
             return reject(new Error('Invalid credentials'));
         });
     });

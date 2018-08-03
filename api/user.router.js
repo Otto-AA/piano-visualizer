@@ -4,19 +4,19 @@ const User = require('../db/models/User');
 const SignupVerification = require('../db/models/SignupVerification');
 const { SuccessResponse, Response, unexpectedError, invalidCredentialsError, loginRequiredError, invalidArgumentsError, notFoundError } = require('./Response');
 const passport = require('passport');
-const { api: logger } = require('../config/logger');
+const { apiLogger } = require('../config/logger');
 
 const router = Router();
 
 
 function isAuthenticated(req, res, next) {
-    logger.silly('checking authentication');
+    apiLogger.silly('checking authentication');
     if (req.isAuthenticated()) {
-        logger.silly('user is authenticated');
+        apiLogger.silly('user is authenticated');
         return next();
     }
 
-    logger.verbose('user authentication failed');
+    apiLogger.verbose('user authentication failed');
     return res.status(401)
         .send(loginRequiredError);
 }
@@ -29,7 +29,7 @@ router.post('/signup', async (req, res, next) => {
     const { user_name, email, password } = req.body;
 
     // TODO: Update errorOccurred functionality
-    logger.silly('checking if email/user_name is already in use before signup');
+    apiLogger.silly('checking if email/user_name is already in use before signup');
     let errorOccurred = true;
     await User.findOne({
         $or: [{ user_name }, { email }]
@@ -38,14 +38,14 @@ router.post('/signup', async (req, res, next) => {
             throw err;
         }
         if (user) {
-            logger.verbose('signup failed due to 409 conflict');
+            apiLogger.verbose('signup failed due to 409 conflict');
             return res.status(409)
                 .send(Response({ code: 409, message: 'username or email already in use' }));
         }
         errorOccurred = false;
     });
     if (errorOccurred) {
-        logger.verbose('signup error occurred');
+        apiLogger.verbose('signup error occurred');
         return;
     }
     const verification_id = uuidv1();
@@ -57,16 +57,16 @@ router.post('/signup', async (req, res, next) => {
     });
 
     // Save verification to database
-    logger.silly('saving verification id to database');
+    apiLogger.silly('saving verification id to database');
     verification.save()
         .then(val => {
-            logger.silly('successfully saved verification id');
+            apiLogger.silly('successfully saved verification id');
             res.send(SuccessResponse({ data: { verification_id } }))
         })
         .catch(err => {
             // MongoDB duplicate key error
             if (err.code === 11000) {
-                logger.verbose('verification failed due to 409 conflict');
+                apiLogger.verbose('verification failed due to 409 conflict');
                 return res.status(409)
                     .send(Response({
                         code: 409,
@@ -74,7 +74,7 @@ router.post('/signup', async (req, res, next) => {
                     }));
             }
             if (err.name === 'ValidationError') {
-                logger.verbose('verification failed due to validation error');
+                apiLogger.verbose('verification failed due to validation error');
                 return res.status(400)
                     .send(Response({
                         code: 400,
@@ -90,11 +90,11 @@ router.post('/signup', async (req, res, next) => {
 router.post('/verify_signup', async (req, res) => {
     const { verification_id } = req.body;
 
-    logger.silly('getting user data associated with verification_id');
+    apiLogger.silly('getting user data associated with verification_id');
     const userData = await SignupVerification.findById(verification_id).exec();
 
     if (!userData) {
-        logger.verbose('returning 400 as no verification_id was found');
+        apiLogger.verbose('returning 400 as no verification_id was found');
         return res.status(400)
             .send(Response({
                 code: 400,
@@ -102,7 +102,7 @@ router.post('/verify_signup', async (req, res) => {
             }));
     }
 
-    logger.silly('creating new user based on user data');
+    apiLogger.silly('creating new user based on user data');
     const user = new User({
         user_name: userData.user_name,
         email: userData.email,
@@ -110,17 +110,17 @@ router.post('/verify_signup', async (req, res) => {
     });
 
     try {
-        logger.silly('saving verified user to database');
+        apiLogger.silly('saving verified user to database');
         await user.save();
         // verification is deleted asynchronously as it isn't important to succeed
-        logger.silly('removing verification id from database')
+        apiLogger.silly('removing verification id from database')
         SignupVerification.findByIdAndRemove(verification_id).exec();
         return res.status(200).send(SuccessResponse({ data: { user } }));
     }
     catch (err) {
         // MongoDB duplicate key error
         if (err.code === 11000) {
-            logger.verbose('returning 409 because user with same id/email already exists');
+            apiLogger.verbose('returning 409 because user with same id/email already exists');
             return res.status(409)
                 .send(Response({
                     code: 409,
@@ -134,7 +134,7 @@ router.post('/verify_signup', async (req, res) => {
 
 router.post('/login', passport.authenticate('local', { failWithError: true }),
     function (req, res, next) {
-        logger.silly('successul login');
+        apiLogger.silly('successul login');
         // Successful login
         const user = req.user;
 
@@ -142,7 +142,7 @@ router.post('/login', passport.authenticate('local', { failWithError: true }),
             .send(SuccessResponse({ data: { user } }));
     },
     function (err, req, res, next) {
-        logger.verbose('login failed', err);
+        apiLogger.verbose('login failed', err);
         // Login error
         return res.status(401)
             .send(invalidCredentialsError);
@@ -150,14 +150,14 @@ router.post('/login', passport.authenticate('local', { failWithError: true }),
 );
 
 router.post('/logout', function (req, res) {
-    logger.silly('logging out');
+    apiLogger.silly('logging out');
     req.logout();
     return res.status(200)
         .send(SuccessResponse());
 });
 
 router.get('/current_user', isAuthenticated, function (req, res, next) {
-    logger.silly('getting current user');
+    apiLogger.silly('getting current user');
     const user = req.user;
     return res.status(200)
         .send(SuccessResponse({ data: { user } }));
@@ -168,13 +168,13 @@ router.delete('/user', async (req, res) => {
     const { email, password } = req.query;
 
     // Require credentials
-    logger.silly('validating credentials before deleting user');
+    apiLogger.silly('validating credentials before deleting user');
     try {
         await User.validateCredentials({ email, password });
     }
     catch (err) {
         if (err.message === 'Invalid credentials') {
-            logger.verbose('invalid credentials for deleting user');
+            apiLogger.verbose('invalid credentials for deleting user');
             return res.status(401).send(invalidCredentialsError);
         }
 
@@ -185,7 +185,7 @@ router.delete('/user', async (req, res) => {
         if (err) {
             throw err;
         }
-        logger.verbose('deleted user');
+        apiLogger.verbose('deleted user');
         return res.status(200).send(SuccessResponse());
     });
 });
@@ -197,7 +197,7 @@ router.get('/user', function (req, res) {
             throw err;
         }
         if (!user) {
-            logger.silly('user not found');
+            apiLogger.silly('user not found');
             return res.status(404)
                 .send(notFoundError);
         }
@@ -207,7 +207,7 @@ router.get('/user', function (req, res) {
             user_id: user.user_id,
             user_name: user.user_name
         };
-        logger.silly('returning user');
+        apiLogger.silly('returning user');
         return res.status(200).send(SuccessResponse({ data: { user } }));
     });
 });
