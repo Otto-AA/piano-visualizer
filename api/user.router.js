@@ -139,7 +139,7 @@ router.post('/login', passport.authenticate('local', { failWithError: true }),
         const user = req.user;
 
         return res.status(200)
-            .send(Response({ data: { user } }));
+            .send(SuccessResponse({ data: { user } }));
     },
     function (err, req, res, next) {
         logger.verbose('login failed', err);
