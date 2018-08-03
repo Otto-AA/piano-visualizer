@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('./models/User');
 const SignupVerification = require('./models/SignupVerification');
+const { databaseLogger: dbLogger } = require('../config/logger');
 
 const mongo_url = process.env.MONGO_URL;
 
@@ -18,18 +19,8 @@ function connect () {
 const disconnect = mongoose.disconnect;
 
 function logDatabase() {
-    User.find()
-        .then(res => {
-            console.group('Users');
-            console.log(res);
-            console.groupEnd();
-        });
-    SignupVerification.find()
-        .then(res => {
-            console.group('SignupVerifications');
-            console.log(res);
-            console.groupEnd();
-        });
+    User.find().then(res => dbLogger.verbose('Users', res));
+    SignupVerification.find().then(res => dbLogger.verbose('SignupVerifications', res));
 }
 
 module.exports = {
