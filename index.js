@@ -4,7 +4,7 @@ require('dotenv').load();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const apiRouterFunc = require('./api/api');
+const apiRouter = require('./api/api');
 const sessionConfig = require('./config/session');
 const passportConfig = require('./config/passport');
 const { appLogger, requestsLogger } = require('./config/logger');
@@ -42,7 +42,7 @@ app.use(expressWinston.logger({
   meta: false
 }));
 
-apiRouterFunc('/api', app);
+app.use('/api', apiRouter);
 app.use(express.static('public'));
 
 

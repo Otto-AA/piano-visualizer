@@ -34,6 +34,7 @@
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "proxyquire": "^2.0.1",
+    "shortid": "^2.2.12",
     "sinon": "^6.1.4",
     "supertest": "^3.1.0",
     "uuid": "^3.3.2",

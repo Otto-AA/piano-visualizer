@@ -19,28 +19,35 @@ before(function connectDatabase() {
     const mongo_url = 'mongodb://localhost:27017/piano_visualizer_test_db'
     return mongoose.connect(mongo_url);
 });
+before(function setLoadTestRouterFunction() {
+    this.router = this.router || {};
+
+    this.loadTestRouter = (pathRelativeToRoot, moduleProxies = {}) => {
+        // Create an express application object
+        const app = express();
+        app.use(bodyParser.urlencoded({
+            extended: true
+        }));
+        app.use(bodyParser.json());
+        app.use(cookieParser());
+        sessionConfig(app);
+        passportConfig(app);
+    
+        const route = proxyquire(`../${pathRelativeToRoot}`, moduleProxies);
+    
+        // Bind a route to our application
+        app.use(route);
+    
+        return supertest.agent(app);
+    }
+});
 before(function setApi() {
-
-    // Create an express application object
-    const app = express();
-    app.use(bodyParser.urlencoded({
-        extended: true
-    }));
-    app.use(bodyParser.json());
-    app.use(cookieParser());
-    sessionConfig(app);
-    passportConfig(app);
-
-    const route = proxyquire('../api/api', {});
-
-    // Bind a route to our application
-    route('/api', app);
-    this.api = supertest.agent(app);
+    this.api = this.loadTestRouter('api/api');
 });
 before(function setAddTestUserFunction() {
     this.addTestUser = async (testUser = this.testData.user) => {
         let verification_id;
-        await this.api.post('/api/signup')
+        await this.api.post('/signup')
             .send(testUser)
             .expect('Content-Type', /json/)
             .expect(200)
@@ -49,7 +56,7 @@ before(function setAddTestUserFunction() {
                 verification_id = res.body.data.verification_id;
             });
 
-        await this.api.post('/api/verify_signup')
+        await this.api.post('/verify_signup')
             .send({ verification_id })
             .expect(200)
             .then(res => {
@@ -61,7 +68,7 @@ before(function setAddTestUserFunction() {
 });
 before(function setLoginFunctions() {
     this.login = async (user = this.testData.user) => {
-        return this.api.post('/api/login')
+        return this.api.post('/login')
             .send({
                 email: user.email,
                 password: user.password
@@ -73,7 +80,7 @@ before(function setLoginFunctions() {
             });
     };
     this.logout = async () => {
-        return this.api.post('/api/login')
+        return this.api.post('/login')
             .send()
             .expect(200);
     };

@@ -25,7 +25,7 @@ describe('Router: user', function () {
         });
 
         // Bind a route to our application
-        route('/api', app);
+        app.use(route);
 
         // Get a supertest instance so we can make requests
         this.request = supertest(app);
@@ -41,7 +41,7 @@ describe('Router: user', function () {
         // Fake no user response
         this.UserStub.findById.yields(null, null);
 
-        this.request.get('/api/user')
+        this.request.get('/user')
             .expect('Content-Type', /json/)
             .expect(404, function (err, res) {
                 expect(res.body).to.deep.equal(notFoundError);
@@ -57,7 +57,7 @@ describe('Router: user', function () {
         this.UserStub.findById.yields(null, userData);
 
         this.request
-            .get('/api/user')
+            .get('/user')
             .expect('Content-Type', /json/)
             .expect(200, function (err, res) {
                 expect(res.body.data.user).to.deep.equal(userData);

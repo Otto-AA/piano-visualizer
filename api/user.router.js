@@ -2,7 +2,7 @@ const { Router } = require('express')
 const uuidv1 = require('uuid/v1');
 const User = require('../db/models/User');
 const SignupVerification = require('../db/models/SignupVerification');
-const { SuccessResponse, Response, unexpectedError, invalidCredentialsError, loginRequiredError, invalidArgumentsError, notFoundError } = require('./Response');
+const { SuccessResponse, Response, invalidCredentialsError, loginRequiredError, notFoundError } = require('./Response');
 const passport = require('passport');
 const { apiLogger } = require('../config/logger');
 
@@ -212,6 +212,5 @@ router.get('/user', function (req, res) {
     });
 });
 
-module.exports = function (path, app) {
-    app.use(path, router);
-};
+
+module.exports = router;
