@@ -36,12 +36,35 @@ router.post('/visualization', isAuthenticated, (req, res, next) => {
         });
 });
 
+router.get('/visualization', (req, res, next) => {
+    const { visualizationId, visualizationType } = req.query;
+
+    return getVisualization(visualizationId, visualizationType)
+        .then(visualization => res.status(200).send(SuccessResponse({ data: { visualization } })))
+        .catch(err => {
+            if (err.message === 'not found')
+                return res.status(404).send(notFoundError);
+
+            return next(err);
+        });
+});
+
+router.delete('/visualization', (req, res, next) => {
+    const { visualizationId, visualizationType } = req.query;
+
+    return deleteVisualization(visualizationId, visualizationType)
+        .then(() => res.status(200).send(SuccessResponse()))
+        .catch(err => {
+            if (err.message === 'not found')
+                return res.status(404).send(notFoundError);
+
+            return next(err);
+        });
+});
+
 
 function saveVisualization(visualization, visualizationType) {
     return new Promise((resolve, reject) => {
-        if (!isValidVisualizationType(visualizationType))
-            return reject(new Error('invalid visualization type'));
-
         const visualizationModel = getVisualizationModel(visualizationType);
         return visualizationModel.create(visualization, (err, savedVisualization) => {
             if (err)
@@ -49,16 +72,48 @@ function saveVisualization(visualization, visualizationType) {
     
             return resolve(savedVisualization);
         });
-    });
+    });       
+}
+
+function getVisualization(visualizationId, visualizationType) {
+    return new Promise((resolve, reject) => {
+        const visualizationModel = getVisualizationModel(visualizationType);
         
+        visualizationModel.findById(visualizationId, (err, visualization) => {
+            if (err)
+                return reject(err);
+            else if (!visualization)
+                return reject(new Error('not found'));
+            
+            return resolve(visualization);
+        });
+    });
+}
+
+function deleteVisualization(visualizationId, visualizationType) {
+    return new Promise((resolve, reject) => {
+        const visualizationModel = getVisualizationModel(visualizationType);
+
+        visualizationModel.findByIdAndRemove(visualizationId, (err, visualization) => {
+            if (err)
+                return reject(err);
+
+            // TODO: Check if !visualization (1) can occur and (2) means that it was not found. Same for DELETE /song
+            
+            return resolve();
+        });
+    });
+}
+
+function getVisualizationModel(modelName) {
+    if (!isValidVisualizationType(modelName))
+        throw new Error('invalid visualization type');
+    
+    return visualizationModels[modelName];
 }
 
 function isValidVisualizationType(visualizationType) {
     return visualizationModels.hasOwnProperty(visualizationType);
-}
-
-function getVisualizationModel(modelName) {
-    return visualizationModels[modelName];
 }
 
 module.exports = router;

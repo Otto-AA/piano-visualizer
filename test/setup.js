@@ -95,9 +95,24 @@ before(function setAddVisualizationFunction() {
                 ...visualization
             })
             .expect(200)
-            .expect(res => expect(res.body.data.visualizationId).to.be.a('string'));
+            .expect(res => expect(res.body.data.visualizationId).to.be.a('string'))
+            .then(res => res.body.data);
     };
 });
+before(function setAddSongFunction() {
+    this.addSong = async (song = this.testData.song, visualizationId = undefined) => {
+        if (!visualizationId)
+            visualizationId = (await this.addVisualization()).visualizationId;
+
+        song.visualizations[0].visualizationId = visualizationId;
+        return this.api
+            .post('/song')
+            .send(song)
+            .expect(200)
+            .expect(res => expect(res.body.data.songId).to.be.a('string'))
+            .then(res => res.body.data);
+    };
+})
 beforeEach(async function emptyCollections() {
     await User.find().remove();
     await SignupVerification.find().remove();

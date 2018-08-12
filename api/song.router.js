@@ -43,6 +43,32 @@ router.post('/song', isAuthenticated, (req, res, next) => {
         });
 });
 
+router.get('/song', (req, res, next) => {
+    const { songId } = req.query;
+
+    return getSong(songId)
+        .then(song => res.status(200).send(SuccessResponse({ data: { song }})))
+        .catch(err => {
+            if (err.message === 'not found')
+                return res.status(404).send(notFoundError);
+            
+            return next(err);
+        });
+});
+
+router.delete('/song', isAuthenticated, (req, res, next) => {
+    const { songId } = req.query;
+
+    return deleteSong(songId)
+        .then(() => res.status(200).send(SuccessResponse()))
+        .catch(err => {
+            if (err.message === 'not found')
+                return res.status(404).send(notFoundError);
+            
+            return next(err);
+        });
+});
+
 
 function saveSong(song) {
     return new Promise((resolve, reject) => {
@@ -53,6 +79,30 @@ function saveSong(song) {
             return resolve(savedSong);
         });
     });       
+}
+
+function getSong(songId) {
+    return new Promise((resolve, reject) => {
+        return Song.findById(songId, (err, song) => {
+            if (err)
+                return reject(err)
+            else if (!song)
+                return reject(new Error('not found'));
+            
+            return resolve(song);
+        });
+    });
+}
+
+function deleteSong(songId) {
+    return new Promise((resolve, reject) => {
+        return Song.findByIdAndRemove(songId, (err, song) => {
+            if (err)
+                return reject(err);
+            
+            return resolve();
+        });
+    });
 }
 
 module.exports = router;
