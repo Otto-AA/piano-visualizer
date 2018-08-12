@@ -2,7 +2,7 @@ const { Router } = require('express')
 const uuidv1 = require('uuid/v1');
 const User = require('../db/models/User');
 const SignupVerification = require('../db/models/SignupVerification');
-const { SuccessResponse, Response, unexpectedError, invalidCredentialsError, loginRequiredError, invalidArgumentsError, notFoundError } = require('./Response');
+const { SuccessResponse, Response, invalidCredentialsError, loginRequiredError, notFoundError } = require('./Response');
 const passport = require('passport');
 const { apiLogger } = require('../config/logger');
 
@@ -134,16 +134,13 @@ router.post('/verify_signup', async (req, res) => {
 
 router.post('/login', passport.authenticate('local', { failWithError: true }),
     function (req, res, next) {
-        apiLogger.silly('successul login');
-        // Successful login
+        apiLogger.silly('successful login');
         const user = req.user;
-
         return res.status(200)
             .send(SuccessResponse({ data: { user } }));
     },
     function (err, req, res, next) {
         apiLogger.verbose('login failed', err);
-        // Login error
         return res.status(401)
             .send(invalidCredentialsError);
     }
@@ -212,6 +209,5 @@ router.get('/user', function (req, res) {
     });
 });
 
-module.exports = function (path, app) {
-    app.use(path, router);
-};
+
+module.exports = router;
