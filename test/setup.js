@@ -86,6 +86,18 @@ before(function setLoginFunctions() {
     };
     this.addTestUserAndLogin = (user = this.testData.user) => this.addTestUser(user).then(() => this.login(user));
 });
+before(function setAddVisualizationFunction() {
+    this.addVisualization = async (visualization = this.testData.visualizationStandard, visualizationType = 'standard') => {
+        return this.api
+            .post('/visualization')
+            .send({
+                visualizationType,
+                ...visualization
+            })
+            .expect(200)
+            .expect(res => expect(res.body.data.visualizationId).to.be.a('string'));
+    };
+});
 beforeEach(async function emptyCollections() {
     await User.find().remove();
     await SignupVerification.find().remove();

@@ -13,7 +13,7 @@ const songSchema = new mongoose.Schema({
         required: true
     },
     user_id: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: 'User'
     },
     type: {
@@ -38,15 +38,16 @@ const songSchema = new mongoose.Schema({
         default: false
     },
     visualizations: {
+        // TODO: Check if using an object instead of an array is possible here
         type: [{
-            visualization_type: {
+            visualizationType: {
                 type: String,
-                enum: ['VisualizationStandard']
+                enum: ['standard']
             },
-            visualization_id: {
+            visualizationId: {
                 type: mongoose.Schema.Types.ObjectId,
                 // Dynamic link to collection with the previously specified type
-                ref: 'visualizations.visualization_type'
+                ref: 'visualizations.visualizationType'
             }
         }],
         required: true

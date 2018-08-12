@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const userRouter = require('./user.router');
 const visualizationRouter = require('./visualization.router');
+const songRouter = require('./song.router');
 const { unexpectedError } = require('./Response');
 const { apiLogger } = require('../config/logger');
 
@@ -24,6 +25,7 @@ const apiRouter = Router();
 apiRouter.use(errorHandler);
 apiRouter.use(userRouter);
 apiRouter.use(visualizationRouter);
+apiRouter.use(songRouter);
 
 module.exports = apiRouter;
 
