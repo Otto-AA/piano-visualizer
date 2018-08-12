@@ -21,37 +21,45 @@ function isAuthenticated(req, res, next) {
 
 router.post('/visualization', isAuthenticated, (req, res, next) => {
     const { visualizationType, ...visualization } = req.body;
-
-    if (!visualizationModels.hasOwnProperty(visualizationType)) {
-        apiLogger.verbose(`invalid visualization type {${visualizationType}}`);
-
-        return res.status(400)
-            .send(Response({
-                code: 400,
-                message: 'invalid visualization type'
-            }));
-    }
-
-    const visualizationModel = visualizationModels[visualizationType];
-
-    visualizationModel.create(visualization, (err, savedVisualization) => {
-        if (err) {
-            throw err;
-        }
-
-        if (!savedVisualization) {
-            apiLogger.verbose('!savedVisualization');
+    
+    saveVisualization(visualization, visualizationType)
+        .then(({ _id }) => res.status(200).send(SuccessResponse({ data: { visualizationId: _id }})))
+        .catch(err => {
+            if (err.message === 'invalid visualization type' || err.name === 'StrictModeError' || err.name === 'ValidationError') {
+                return res.status(400).send(Response({
+                    code: 400,
+                    message: err.message
+                }));
+            }
             
-            return res.status(400)
-                .send(Response({ code: 404 }));
-        }
-
-        return res.status(200)
-            .send(SuccessResponse({ data: { visualizationId: savedVisualization._id } }));
-    });
+            return next(err);
+        });
 });
 
-router.get('/test', (req, res) => res.status(200).send(true));
+
+function saveVisualization(visualization, visualizationType) {
+    return new Promise((resolve, reject) => {
+        if (!isValidVisualizationType(visualizationType))
+            return reject(new Error('invalid visualization type'));
+
+        const visualizationModel = getVisualizationModel(visualizationType);
+        return visualizationModel.create(visualization, (err, savedVisualization) => {
+            if (err)
+                return reject(err);
+    
+            return resolve(savedVisualization);
+        });
+    });
+        
+}
+
+function isValidVisualizationType(visualizationType) {
+    return visualizationModels.hasOwnProperty(visualizationType);
+}
+
+function getVisualizationModel(modelName) {
+    return visualizationModels[modelName];
+}
 
 module.exports = router;
 // module.exports = function (path, app) {
