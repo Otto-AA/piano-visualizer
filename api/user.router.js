@@ -134,16 +134,13 @@ router.post('/verify_signup', async (req, res) => {
 
 router.post('/login', passport.authenticate('local', { failWithError: true }),
     function (req, res, next) {
-        apiLogger.silly('successul login');
-        // Successful login
+        apiLogger.silly('successful login');
         const user = req.user;
-
         return res.status(200)
             .send(SuccessResponse({ data: { user } }));
     },
     function (err, req, res, next) {
         apiLogger.verbose('login failed', err);
-        // Login error
         return res.status(401)
             .send(invalidCredentialsError);
     }
