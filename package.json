@@ -1,10 +1,10 @@
 {
-  "name": "express-typescript-starter",
+  "name": "piano-visualizer",
   "version": "0.1.0",
-  "description": "A starting point for Node.js express apps with TypeScript",
+  "description": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/TypeScript-Node-Starter"
+    "url": "https://github.com/otto-aa/piano-visualizer"
   },
   "author": "Bowden Kelly",
   "license": "MIT",
