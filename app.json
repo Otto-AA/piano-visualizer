@@ -1,0 +1,37 @@
+{
+  "name": "piano-visualizer",
+  "description": "",
+  "scripts": {
+    "postdeploy": "npm run build"
+  },
+  "env": {
+    "DOMAIN": {
+      "required": true
+    },
+    "LOG_LEVEL": {
+      "required": true
+    },
+    "MONGO_URL": {
+      "required": true
+    },
+    "NODE_ENV": {
+      "required": true
+    },
+    "SESSION_SECRET": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [
+
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
