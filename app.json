@@ -3,7 +3,7 @@
     "description": "",
     "scripts": {},
     "env": {
-        "MONGO_URI": {
+        "MONGODB_URI": {
             "required": true
         },
         "SESSION_SECRET": {
