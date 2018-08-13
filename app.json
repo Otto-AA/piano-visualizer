@@ -2,7 +2,14 @@
     "name": "piano-visualizer",
     "description": "",
     "scripts": {},
-    "env": {},
+    "env": {
+        "MONGO_URI": {
+            "required": true
+        },
+        "SESSION_SECRET": {
+            "required": true
+        }
+    },
     "formation": {
         "web": {
             "quantity": 1
