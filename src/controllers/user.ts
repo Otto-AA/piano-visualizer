@@ -80,6 +80,9 @@ export let getSignup = (req: Request, res: Response) => {
  * Create a new local account.
  */
 export let postSignup = (req: Request, res: Response, next: NextFunction) => {
+  // TODO: Update the regex. Currently it seems to allow too much things
+  // TODO: Update the functionality so it can easily be used in other functions (e.g. postUpdateProfile) as well as here
+  req.assert("name", "Username may only contain letters, dashes and underscores and must be at least 2 characters long").matches(/[\w\-_]/).len({ min: 2 });
   req.assert("email", "Email is not valid").isEmail();
   req.assert("password", "Password must be at least 4 characters long").len({ min: 4 });
   req.assert("confirmPassword", "Passwords do not match").equals(req.body.password);
@@ -94,13 +97,16 @@ export let postSignup = (req: Request, res: Response, next: NextFunction) => {
 
   const user = new User({
     email: req.body.email,
-    password: req.body.password
+    password: req.body.password,
+    profile: {
+      name: req.body.name
+    }
   });
 
-  User.findOne({ email: req.body.email }, (err, existingUser) => {
+  User.findOne({ $or: [{ email: req.body.email }, { profile: { name: req.body.name } }] }, (err, existingUser) => {
     if (err) { return next(err); }
     if (existingUser) {
-      req.flash("errors", { msg: "Account with that email address already exists." });
+      req.flash("errors", { msg: "Account with that email address or username already exists." });
       return res.redirect("/signup");
     }
     user.save((err) => {
