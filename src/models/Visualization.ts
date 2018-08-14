@@ -12,7 +12,7 @@ export type VisualizationModel = mongoose.Document & {
 const visualizationSchema = new mongoose.Schema({
   visualizationType: {
     type: String,
-    enum: [ "standard" ]
+    enum: [ "VisualizationStandard" ]
   },
   usedBySongs: [{
     type: mongoose.Schema.Types.ObjectId,
