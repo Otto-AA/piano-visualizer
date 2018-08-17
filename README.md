@@ -1,6 +1,7 @@
 # [WIP] Piano Visualizer
 
-<!--- [![Website piano-visualizer.herokuapp.com](https://img.shields.io/website-up-down-green-red/https/piano-visualizer.herokuapp.com.svg)](https://piano-visualizer.herokuapp.com/) ---> [![Travis Build passing](https://travis-ci.org/Otto-AA/piano-visualizer.svg?branch=master)](https://travis-ci.org/Otto-AA/piano-visualizer) [![GitHub license](https://img.shields.io/github/license/otto-aa/piano-visualizer.svg)](https://github.com/otto-aa/piano-visualizer/blob/master/LICENSE)
+<!--- [![Website piano-visualizer.herokuapp.com](https://img.shields.io/website-up-down-green-red/https/piano-visualizer.herokuapp.com.svg)](https://piano-visualizer.herokuapp.com/) --->
+[![Travis Build passing](https://travis-ci.org/Otto-AA/piano-visualizer.svg?branch=master)](https://travis-ci.org/Otto-AA/piano-visualizer) [![GitHub license](https://img.shields.io/github/license/otto-aa/piano-visualizer.svg)](https://github.com/otto-aa/piano-visualizer/blob/master/LICENSE)
 
 
 Website for creating visualizations by a mp3 and midi file.
