@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import shortid from "shortid";
 import { VisualizationModel } from "./Visualization";
-import { ValidationSchema } from "../../node_modules/express-validator/check";
+import { ValidationSchema } from "express-validator/check";
 
 // TODO: This is untested. Remove me when this works
 
@@ -148,7 +148,7 @@ songSchemaValidator.visualizations = {
         // TODO: Update this somehow and then remove the @ts-ignore in front of songSchemaValidator.visualizations
         // Due to a bug (?) the customSanitizer won't get called for arrays. See https://github.com/express-validator/express-validator/issues/618
         options: [(visualizations: { visualizationType: string, visualization: string }[]) => {
-            return visualizations.map(({ visualizationType, visualization }) => { return { visualizationType, visualization: Types.ObjectId(visualization) }; });
+            return visualizations.map(({ visualizationType, visualization }) => { return { visualizationType, visualization: mongoose.Types.ObjectId(visualization) }; });
         }]
     }
 };
