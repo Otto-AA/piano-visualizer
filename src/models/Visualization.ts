@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import * as autopopulate from "mongoose-autopopulate"
+import autopopulate from "mongoose-autopopulate";
 
 // TODO: This is untested. Remove me when this works
 
@@ -16,11 +16,11 @@ const visualizationSchema = new mongoose.Schema({
   },
   usedBySongs: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Song'
+    ref: "Song"
   }],
   data: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'visualizationType',
+    refPath: "visualizationType",
     autopopulate: true,
     required: true
   }

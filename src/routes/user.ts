@@ -3,11 +3,10 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import passport from "passport";
 import { default as User, UserModel, AuthToken } from "../models/User";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, Router } from "express";
 import { IVerifyOptions } from "passport-local";
 import { WriteError } from "mongodb";
-import "../config/passport";
-const request = require("express-validator");
+import * as passportConfig from "../config/passport";
 
 
 /**
@@ -383,3 +382,21 @@ export let postForgot = (req: Request, res: Response, next: NextFunction) => {
     res.redirect("/forgot");
   });
 };
+
+const accountRouter = Router();
+accountRouter.get("/login", getLogin);
+accountRouter.post("/login", postLogin);
+accountRouter.get("/logout", logout);
+accountRouter.get("/forgot", getForgot);
+accountRouter.post("/forgot", postForgot);
+accountRouter.get("/reset/:token", getReset);
+accountRouter.post("/reset/:token", postReset);
+accountRouter.get("/signup", getSignup);
+accountRouter.post("/signup", postSignup);
+accountRouter.get("/account", passportConfig.isAuthenticated, getAccount);
+accountRouter.post("/account/profile", passportConfig.isAuthenticated, postUpdateProfile);
+accountRouter.post("/account/password", passportConfig.isAuthenticated, postUpdatePassword);
+accountRouter.post("/account/delete", passportConfig.isAuthenticated, postDeleteAccount);
+accountRouter.get("/account/unlink/:provider", passportConfig.isAuthenticated, getOauthUnlink);
+
+export default accountRouter;

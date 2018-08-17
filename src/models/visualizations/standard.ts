@@ -29,11 +29,11 @@ export type VisualizationStandardModel = mongoose.Document & {
 };
 
 // TODO: Update this function
-const isColorString = (str) => true;
+const isColorString = (str: string) => true;
 
 const threeColorGradient = {
   type: [String],
-  validate: (gradient) => gradient.length === 3 && gradient.every(isColorString)
+  validate: (gradient: string[]) => gradient.length === 3 && gradient.every(isColorString)
 };
 
 const visualizationStandardSchema = new mongoose.Schema({background: {
