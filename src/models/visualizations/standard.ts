@@ -15,7 +15,7 @@ export type VisualizationStandardModel = mongoose.Document & {
       width: number
     }
   },
-  pinaoVisualization: {
+  pianoVisualization: {
     key: {
       border: {
         white: boolean,
@@ -36,34 +36,36 @@ const threeColorGradient = {
   validate: (gradient: string[]) => gradient.length === 3 && gradient.every(isColorString)
 };
 
-const visualizationStandardSchema = new mongoose.Schema({background: {
-  image: {
-    link: String,
-    creator: String,
-    creatorLink: String
+const visualizationStandardSchema = new mongoose.Schema({
+  background: {
+    image: {
+      link: { type: String, required: true },
+      creator: { type: String, required: true },
+      creatorLink: { type: String, required: true },
     },
-    gradient: threeColorGradient
+    gradient: { ...threeColorGradient, required: true }
   },
   audioVisualization: {
     bar: {
-      gradient: threeColorGradient,
+      gradient: { ...threeColorGradient, required: true },
       width: {
         type: Number,
-        min: 1
+        min: 1,
+        required: true
       }
     }
   },
   pianoVisualization: {
     key: {
       border: {
-        white: Boolean,
-        black: Boolean,
-        color: String
+        white: { type: Boolean, required: true },
+        black: { type: Boolean, required: true },
+        color: { type: String, required: true }
       },
-      pressedColor: String
+      pressedColor: { type: String, required: true }
     }
   },
-  fontColor: String
+  fontColor: { type: String, required: true }
 }, { timestamps: true, strict: true });
 
 const VisualizationStandard = mongoose.model("VisualizationStandard", visualizationStandardSchema);
