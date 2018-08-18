@@ -1,3 +1,5 @@
+process.env["TEST_SUITE"] = "contact";
+
 import request from "supertest";
 import app from "../src/app";
 

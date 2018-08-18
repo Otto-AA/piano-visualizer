@@ -1,3 +1,5 @@
+process.env["TEST_SUITE"] = "song";
+
 import request from "supertest";
 import app from "../src/app";
 import { EDESTADDRREQ } from "constants";
@@ -34,7 +36,6 @@ describe("POST /song", () => {
                 }]
             })
             .expect(200)
-            .expect(res => console.log(res.body))
             .expect(res => expect(res).not.to.be.undefined);
     });
     it("should respond with 400 given invalid arguments", () => {

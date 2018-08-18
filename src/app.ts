@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import compression from "compression";  // compresses requests
 import session from "express-session";
+import { MemoryStore } from "express-session";
 import bodyParser from "body-parser";
 import logger from "./util/logger";
 import lusca from "lusca";
@@ -60,10 +61,12 @@ app.use(session({
   cookie: {
     maxAge: 60 * 60 * 1000
   },
-  store: new MongoStore({
-    url: mongoUrl,
-    autoReconnect: true
-  })
+  store: (process.env.NODE_ENV !== "test")  ?
+    new MongoStore({
+      url: mongoUrl,
+      autoReconnect: true
+    })
+    : new MemoryStore()
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -99,23 +102,9 @@ app.use(
 app.get("/", homeController.index);
 app.get("/contact", contactController.getContact);
 app.post("/contact", contactController.postContact);
+app.get("/api", apiController.getApi);
 
 app.use("/", accountRouter);
 app.use("/song", songRouter);
-
-
-/**
- * API examples routes.
- */
-app.get("/api", apiController.getApi);
-// app.get("/api/facebook", passportConfig.isAuthenticated, passportConfig.isAuthorized, apiController.getFacebook);
-
-/**
- * OAuth authentication routes. (Sign in)
- */
-// app.get("/auth/facebook", passport.authenticate("facebook", { scope: ["email", "public_profile"] }));
-// app.get("/auth/facebook/callback", passport.authenticate("facebook", { failureRedirect: "/login" }), (req, res) => {
-//   res.redirect(req.session.returnTo || "/");
-// });
 
 export default app;
