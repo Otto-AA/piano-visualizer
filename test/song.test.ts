@@ -2,7 +2,7 @@ process.env["TEST_SUITE"] = "song";
 
 import request from "supertest";
 import app from "../src/app";
-import { EDESTADDRREQ } from "constants";
+import { songData } from "./factory/song.factory";
 
 const chai = require("chai");
 const expect = chai.expect;
@@ -22,19 +22,7 @@ describe("POST /song", () => {
     it("should respond with 200 and song", () => {
         mockLogin();
         return request(app).post("/song")
-            .send({
-                name: "mysongname22",
-                type: "composition",
-                mp3Link: "https://example.org/mp3",
-                midLink: "https://example.org/mid",
-                visualizations: [{
-                    visualizationType: "standard",
-                    visualization: "5b741d288b95041d9c171aab"
-                }, {
-                    visualizationType: "standard",
-                    visualization: "5b741d288b95041d9c171aaa"
-                }]
-            })
+            .send(songData)
             .expect(200)
             .expect(res => expect(res).not.to.be.undefined);
     });
