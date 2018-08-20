@@ -1,6 +1,25 @@
 import mongoose from "mongoose";
+import { isNumber } from "util";
 
-export type VisualizationStandardModel = mongoose.Document & {
+function NoCastString(key: any, options: any) {
+  mongoose.SchemaType.call(this, key, options, "NoCastString");
+}
+NoCastString.prototype = Object.create(mongoose.SchemaType.prototype);
+
+NoCastString.prototype.cast = function(str: any) {
+  if (typeof str !== "string") {
+    throw new Error(`NoCastString: ${str} is not a string`);
+  }
+  return str;
+};
+
+// TODO: Check if this is possible to do correctly
+// @ts-ignore
+mongoose.Schema.Types.NoCastString = NoCastString;
+
+export type VisualizationStandardModel = VisualizationStandardData & mongoose.Document;
+
+export type VisualizationStandardData = {
   background: {
     image: {
       link: string,
@@ -29,7 +48,14 @@ export type VisualizationStandardModel = mongoose.Document & {
 };
 
 // TODO: Update this function
-const isColorString = (str: string) => true;
+const isColorString = (str: string) => {
+  if (typeof str !== "string") {
+    throw new Error("type of color must be a string");
+  }
+
+  // From https://stackoverflow.com/a/8027444/6548154
+  return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(str);
+};
 
 const threeColorGradient = {
   type: [String],
@@ -39,9 +65,9 @@ const threeColorGradient = {
 const visualizationStandardSchema = new mongoose.Schema({
   background: {
     image: {
-      link: { type: String, required: true },
-      creator: { type: String, required: true },
-      creatorLink: { type: String, required: true },
+      link: { type: NoCastString, required: true },
+      creator: { type: NoCastString, required: true },
+      creatorLink: { type: NoCastString, required: true },
     },
     gradient: { ...threeColorGradient, required: true }
   },
@@ -60,12 +86,12 @@ const visualizationStandardSchema = new mongoose.Schema({
       border: {
         white: { type: Boolean, required: true },
         black: { type: Boolean, required: true },
-        color: { type: String, required: true }
+        color: { type: NoCastString, required: true }
       },
-      pressedColor: { type: String, required: true }
+      pressedColor: { type: NoCastString, required: true }
     }
   },
-  fontColor: { type: String, required: true }
+  fontColor: { type: NoCastString, required: true }
 }, { timestamps: true, strict: true });
 
 const VisualizationStandard = mongoose.model("VisualizationStandard", visualizationStandardSchema);
