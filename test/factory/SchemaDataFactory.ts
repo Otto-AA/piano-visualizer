@@ -1,9 +1,14 @@
 import faker from "faker";
 import jsf from "json-schema-faker";
+import { JsfAsyncFormats } from "./JsfAsyncFormats";
+import { visualizationStandardFactory } from "./visualizationStandard.factory";
 
 jsf.extend("faker", function () {
     return faker;
 });
+
+const asyncFormats = new JsfAsyncFormats();
+jsf.format("visualizationStandardId", () => idFromDoc(asyncFormats.registerAsSync(visualizationStandardFactory.getValidSample)));
 
 export class SchemaDataFactory<T> {
     private schema: { [k: string]: any };
@@ -32,6 +37,10 @@ export class SchemaDataFactory<T> {
         const promises = Array.from({ length: n }).map(() => sampleGenerator());
         return Promise.all(promises);
     }
+}
+
+function idFromDoc(doc) {
+    return doc._id;
 }
 
 
