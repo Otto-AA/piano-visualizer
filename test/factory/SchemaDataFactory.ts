@@ -11,6 +11,7 @@ const asyncFormats = new JsfAsyncFormats();
 const formatsHaveLoaded = false;
 const loadAsyncFormats = async () => {
     // TODO: Make this function not await, but all run simultaneously
+    console.log('Loading dependencies');
     const { visualizationStandardFactory } = await import('./visualizationStandard.factory');
     
     jsf.format("visualizationStandardId", idFormatFromFactory(visualizationStandardFactory));
@@ -30,6 +31,7 @@ const waitForDependencies = (): Promise<any> => {
         }, 10);
     });
 };
+waitforDependencies().then(() => console.log('Loaded dependencies'));
 
 export class SchemaDataFactory<T> {
     private schema: { [k: string]: any };
