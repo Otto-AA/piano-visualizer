@@ -2,7 +2,7 @@ process.env["TEST_SUITE"] = "song";
 
 import request from "supertest";
 import app from "../src/app";
-import { songData } from "./factory/song.factory";
+import { songFactory } from "./factory/song.factory";
 
 const chai = require("chai");
 const expect = chai.expect;
@@ -19,8 +19,9 @@ const mockLogin = () => passportConfig.isAuthenticated.mockImplementation((req, 
 
 
 describe("POST /song", () => {
-    it("should respond with 200 and song", () => {
+    it("should respond with 200 and song", async () => {
         mockLogin();
+        const songData = await songFactory.getValidSample();
         return request(app).post("/song")
             .send(songData)
             .expect(200)
