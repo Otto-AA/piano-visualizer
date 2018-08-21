@@ -5,7 +5,7 @@ jsf.extend("faker", function () {
     return faker;
 });
 
-export class SampleFactory<T> {
+export class SchemaDataFactory<T> {
     private schema: { [k: string]: any };
 
     constructor(schema) {
@@ -17,7 +17,7 @@ export class SampleFactory<T> {
     }
 
     public getValidSamples(n): Promise<T[]> {
-        return SampleFactory.getMultiple(n, this.getValidSample.bind(this));
+        return SchemaDataFactory.getMultiple(n, this.getValidSample.bind(this));
     }
 
     public getInvalidSample(): Promise<T> {
@@ -25,7 +25,7 @@ export class SampleFactory<T> {
     }
 
     public getInvalidSamples(n): Promise<T[]> {
-        return SampleFactory.getMultiple(n, this.getInvalidSample.bind(this));
+        return SchemaDataFactory.getMultiple(n, this.getInvalidSample.bind(this));
     }
 
     private static getMultiple(n, sampleGenerator: () => Promise<any>): Promise<any[]> {

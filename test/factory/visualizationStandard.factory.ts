@@ -1,4 +1,4 @@
-import { SampleFactory } from "./SampleFactory";
+import { SchemaDataFactory } from "./SchemaDataFactory";
 import { VisualizationStandardData } from "../../src/models/visualizations/standard";
 
 const visualizationStandardSchema = {
@@ -112,7 +112,7 @@ const visualizationStandardSchema = {
     }
 };
 
-export const visualizationStandardFactory = new SampleFactory<VisualizationStandardData>(visualizationStandardSchema);
+export const visualizationStandardFactory = new SchemaDataFactory<VisualizationStandardData>(visualizationStandardSchema);
 
 
 /** TODO
