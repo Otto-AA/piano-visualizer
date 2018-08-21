@@ -17,10 +17,18 @@ const loadAsyncFormats = async () => {
     formatsHaveLoaded = true;
 };
 
-const onDependenciesLoaded = (): Promise<any> => {
+const waitForDependencies = (): Promise<any> => {
     if (formatsHaveLoaded)
         return Promise.resolve();
-    throw new Error('NOT IMPLEMENTED: Couldn\'t wait for loading dependencies');
+    return new Promise((resolve, reject) => {
+        let interval = undefined;
+        interval = setInterval(() => {
+            if (formatsHaveLoaded) {
+                clearInterval(interval);
+                resolve();
+            }
+        }, 10);
+    });
 };
 
 export class SchemaDataFactory<T> {
@@ -31,7 +39,7 @@ export class SchemaDataFactory<T> {
     }
 
     public getValidSample(): Promise<T> {
-        return onDependenciesLoaded()
+        return waitForDependencies()
             .then(() => jsf.resolve(this.schema));
     }
 
