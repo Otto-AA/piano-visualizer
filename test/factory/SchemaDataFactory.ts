@@ -1,14 +1,27 @@
 import faker from "faker";
 import jsf from "json-schema-faker";
 import { JsfAsyncFormats } from "./JsfAsyncFormats";
-import { visualizationStandardFactory } from "./visualizationStandard.factory";
+import mongoose from "mongoose";
 
 jsf.extend("faker", function () {
     return faker;
 });
 
 const asyncFormats = new JsfAsyncFormats();
-jsf.format("visualizationStandardId", () => idFromDoc(asyncFormats.registerAsSync(visualizationStandardFactory.getValidSample)));
+const formatsHaveLoaded = false;
+const loadAsyncFormats = async () => {
+    // TODO: Make this function not await, but all run simultaneously
+    const { visualizationStandardFactory } = await import('./visualizationStandard.factory');
+    
+    jsf.format("visualizationStandardId", idFormatFromFactory(visualizationStandardFactory));
+    formatsHaveLoaded = true;
+};
+
+const onDependenciesLoaded = (): Promise<any> => {
+    if (formatsHaveLoaded)
+        return Promise.resolve();
+    throw new Error('NOT IMPLEMENTED: Couldn\'t wait for loading dependencies');
+};
 
 export class SchemaDataFactory<T> {
     private schema: { [k: string]: any };
@@ -18,7 +31,8 @@ export class SchemaDataFactory<T> {
     }
 
     public getValidSample(): Promise<T> {
-        return jsf.resolve(this.schema);
+        return onDependenciesLoaded()
+            .then(() => jsf.resolve(this.schema));
     }
 
     public getValidSamples(n): Promise<T[]> {
@@ -39,8 +53,15 @@ export class SchemaDataFactory<T> {
     }
 }
 
-function idFromDoc(doc) {
-    return doc._id;
+function idFormatFromFactory(factory, name) {
+    const model = mongoose.model(name);
+    
+    const getIdFromNewDoc = async () => {
+        const data = await factory.getValidSample();
+        const savedDoc = await model.create(data);
+        return savedDoc._id;
+    };
+    return asyncFormats.registerAsSync(getIdFromNewDoc);
 }
 
 
