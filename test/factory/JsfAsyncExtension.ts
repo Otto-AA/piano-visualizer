@@ -173,8 +173,3 @@ function getPropertyByPath({ ...obj }, path) {
     props.forEach(prop => obj = obj[prop]);
     return obj;
 }
-
-module.exports = {
-    JsfAsyncExtension,
-    JsfAsyncExtensionGroup
-};
