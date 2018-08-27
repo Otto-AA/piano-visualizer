@@ -21,7 +21,7 @@ export class JsfAsyncExtensionGroup {
             .forEach(name => this.extensions[name].resetInstances());
     }
 
-    static async resolvePlaceholders(schema): {[k: string]: any} {
+    static async resolvePlaceholders(schema): Promise<{[k: string]: any}> {
         const promises = [];
 
         traverse(schema, (obj, key, val, propPath) => {
@@ -45,7 +45,7 @@ export class JsfAsyncExtension {
         this.generator = generator;
         this.structure = structure;
     }
-    
+
     public resetInstances(): void {
         this.instances = {};
     }
@@ -56,8 +56,8 @@ export class JsfAsyncExtension {
 
     private addPlaceholderCreators({ ...obj }): {[k: string]: any} {
         traverse(obj, (containerObj, key, val, propPath) => {
-            containerObj[key] = (options, ...args) => {
-                const placeholder = new Placeholder(() => this.resolveByPropPath(propPath, options, ...args));
+            containerObj[key] = (options) => {
+                const placeholder = new Placeholder(() => this.resolveByPropPath(propPath, options));
                 return placeholder.getPlaceholder();
             };
         });
@@ -66,11 +66,17 @@ export class JsfAsyncExtension {
 
     async resolveByPropPath(propPath, { instanceId = 0 } = {}) {
         const instance = await this.getResultInstance(instanceId);
-        const val = getPropertyByPath(instance, propPath);
-        return val;
+        try {
+            const val = getPropertyByPath(instance, propPath);
+            return val;
+        }
+        catch (e) {
+            console.error(`Couldn't get property for the path ${propPath} from ${instance}`);
+            throw e;
+        }
     }
 
-    async getResultInstance(instanceId): {[k: string]: any} {
+    async getResultInstance(instanceId): Promise<{[k: string]: any}> {
         if (!this.instances.hasOwnProperty(instanceId)) {
             await this.addNewInstance(instanceId);
         }
@@ -79,11 +85,20 @@ export class JsfAsyncExtension {
     }
 
     async addNewInstance(instanceId) {
-        this.instances[instanceId] = await promisify(this.generator);
+        // TODO: Consider getting the data, then checking if it exists and save it. Else multiple could be generated at the same time
+        this.instances[instanceId] = await this.getGeneratedData();
+    }
+
+    getGeneratedData() {
+        return promisify(this.generator);
     }
 }
 
 class Placeholder {
+    private id: string;
+    static _idsCounter: number = 0;
+    static _placeholders: { [k: string]: any } = {};
+
     constructor(callback) {
         this.id = Placeholder.newId();
         Placeholder._storePlaceholder(this.id, {
@@ -96,11 +111,11 @@ class Placeholder {
         return this.id;
     }
 
-    
+
     static isPlaceholder(placeholder) {
-        if (typeof placeholder !== 'string')
+        if (typeof placeholder !== "string")
             return false;
-        
+
         return Placeholder._idExists(placeholder);
     }
 
@@ -110,14 +125,14 @@ class Placeholder {
     }
 
     static newId() {
-        Placeholder._idsCounter = (Placeholder._idsCounter !== undefined) ? Placeholder._idsCounter + 1 : 0;
+        Placeholder._idsCounter++;
+        // Placeholder._idsCounter = (Placeholder._idsCounter !== undefined) ? Placeholder._idsCounter + 1 : 0;
         const newId = Placeholder.getPrefix() + String(Placeholder._idsCounter);
         Placeholder._storeId(newId);
         return newId;
     }
 
     static _storeId(id) {
-        Placeholder._placeholders = Placeholder._placeholders || {};
         Placeholder._placeholders[id] = undefined;
     }
 
@@ -134,11 +149,11 @@ class Placeholder {
     }
 
     static getPrefix() {
-        return '__PLACEHOLDER__';
+        return "__PLACEHOLDER__";
     }
 }
 
-function promisify(func) {
+function promisify(func): Promise<any> {
     if (func.length === 0) {
         return Promise.resolve(func());
     }
@@ -149,11 +164,11 @@ function promisify(func) {
         });
     }
     else {
-        throw new Error('Tried to promisify a function which had more than one argument');
+        throw new Error("Tried to promisify a function which had more than one argument");
     }
 }
 
-function traverse(obj, cb, path = "") {
+function traverse(obj, cb, path = ""): void {
     const keys = Object.keys(obj);
     keys.forEach(key => {
         const innerPath = (path ? (path + ".") : "") + key;
@@ -165,11 +180,27 @@ function traverse(obj, cb, path = "") {
         else {
             cb(obj, key, val, innerPath);
         }
-    })
+    });
 }
 
 function getPropertyByPath({ ...obj }, path) {
-    const props = path.split('.');
+    const props = path.split(".");
     props.forEach(prop => obj = obj[prop]);
     return obj;
+}
+
+export function getStructureFromMongooseSchema(schema) {
+    const structure: {[k: string]: any} = {};
+    schema.eachPath(path => setPropertyByPath(structure, path, true));
+    return structure;
+}
+
+function setPropertyByPath(obj, path, val) {
+    const props = path.split(".");
+    const prop = props.shift();
+    if (props.length) {
+        obj[prop] = obj[prop] || {};
+        return setPropertyByPath(obj[prop], props.join("."), val);
+    }
+    obj[prop] = val;
 }

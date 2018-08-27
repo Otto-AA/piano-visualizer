@@ -1,11 +1,9 @@
-process.env["TEST_SUITE"] = "visualizationStandard";
-
-import { visualizationStandardFactory as factory } from "../factory/visualizationStandard.factory";
+import { VisualizationStandardFactory } from "../factory/Factory";
 import VisualizationStandard from "../../src/models/visualizations/standard";
 
 describe("VisualizationStandard", () => {
     it("should validate visualizations without errors", () => {
-        return factory.getValidSamples(50)
+        return VisualizationStandardFactory.getValidSamples(5)
             .then(samples => {
                 return Promise.all(samples.map(sample => {
                     const visualization = new VisualizationStandard(sample);
@@ -24,9 +22,11 @@ describe("VisualizationStandard", () => {
             });
     });
     it("should throw errors while validating invalid visualizations", () => {
-        return factory.getInvalidSamples(50)
+        // TODO: Update this to use factory.getInvalidSamples as soon as this is implemented
+        return VisualizationStandardFactory.getValidSamples(5)
             .then(samples => {
                 return Promise.all(samples.map(sample => {
+                    delete sample.background; // TODO: Remove me when getInvalidSamples is implemented
                     const visualization = new VisualizationStandard(sample);
                     return new Promise((resolve, reject) => {
                         visualization.validate((err) => {

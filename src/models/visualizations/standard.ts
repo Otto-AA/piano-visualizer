@@ -17,7 +17,7 @@ NoCastString.prototype.cast = function(str: any) {
 // @ts-ignore
 mongoose.Schema.Types.NoCastString = NoCastString;
 
-export type VisualizationStandardModel = VisualizationStandardData & mongoose.Document;
+export type VisualizationStandardDoc = VisualizationStandardData & mongoose.Document;
 
 export type VisualizationStandardData = {
   background: {

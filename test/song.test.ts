@@ -1,8 +1,6 @@
-process.env["TEST_SUITE"] = "song";
-
 import request from "supertest";
 import app from "../src/app";
-import { songFactory } from "./factory/song.factory";
+import { SongFactory } from "./factory/Factory";
 
 const chai = require("chai");
 const expect = chai.expect;
@@ -21,15 +19,20 @@ const mockLogin = () => passportConfig.isAuthenticated.mockImplementation((req, 
 describe("POST /song", () => {
     it("should respond with 200 and song", async () => {
         mockLogin();
-        const songData = await songFactory.getValidSample();
+        const songData = await SongFactory.getSample();
+        console.log("songData", songData);
         return request(app).post("/song")
             .send(songData)
             .expect(200)
             .expect(res => expect(res).not.to.be.undefined);
     });
-    it("should respond with 400 given invalid arguments", () => {
+    it("should respond with 400 given invalid arguments", async () => {
         mockLogin();
+        const invalidSongData = await SongFactory.getInvalidSample();
+        console.log("invalidSongData", invalidSongData);
+
         return request(app).post("/song")
+            .send(invalidSongData)
             .expect(400)
             .expect(res => expect(res).not.to.be.undefined);
     });

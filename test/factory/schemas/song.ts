@@ -1,13 +1,13 @@
-import { SongData } from "../../src/models/Song";
-import { SchemaDataFactory } from "./SchemaDataFactory";
-
-const songSchema = {
+export const songSchema = {
     id: "song",
     type: "object",
     properties: {
         name: {
             type: "string",
             faker: "random.word"
+        },
+        userId: {
+            Factory: "User._id"
         },
         type: {
             type: "string",
@@ -34,30 +34,17 @@ const songSchema = {
             items: [{
                 type: "object",
                 properties: {
-                    visualizationType: "standard",
-                    visualization: "visualizationStandardId"
+                    visualizationType: {
+                        type: "string",
+                        enum: ["standard"]
+                    },
+                    visualization: {
+                        Factory: "Visualization._id"
+                    }
                 },
                 required: ["visualizationType", "visualization"]
             }]
         }
     },
-    required: ["name", "type", "mp3Link", "midLink", "visualizations"]
+    required: ["name", "userId", "type", "mp3Link", "midLink", "visualizations"]
 };
-            
-export const songFactory = new SchemaDataFactory<SongData>(songSchema);
-
-/*
-export const songData = {
-    name: "mysongname22",
-    type: "composition",
-    mp3Link: "https://example.org/mp3",
-    midLink: "https://example.org/mid",
-    visualizations: [{
-        visualizationType: "standard",
-        visualization: "5b741d288b95041d9c171aab"
-    }, {
-        visualizationType: "standard",
-        visualization: "5b741d288b95041d9c171aaa"
-    }]
-};
-*/

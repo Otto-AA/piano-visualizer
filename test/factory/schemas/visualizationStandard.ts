@@ -1,7 +1,6 @@
-import { SchemaDataFactory } from "./SchemaDataFactory";
-import { VisualizationStandardData } from "../../src/models/visualizations/standard";
+import { JsfAsyncExtension } from "../JsfAsyncExtension";
 
-const visualizationStandardSchema = {
+export const visualizationStandardSchema = {
     id: "visualizationStandard",
     type: "object",
     properties: {
@@ -111,8 +110,6 @@ const visualizationStandardSchema = {
 
     }
 };
-
-export const visualizationStandardFactory = new SchemaDataFactory<VisualizationStandardData>(visualizationStandardSchema);
 
 
 /** TODO

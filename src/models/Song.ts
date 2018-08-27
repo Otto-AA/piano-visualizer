@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import shortid from "shortid";
-import { VisualizationModel } from "./Visualization";
+import { VisualizationDoc } from "./Visualization";
 import { ValidationSchema } from "express-validator/check";
 
 // TODO: This is untested. Remove me when this works
@@ -15,13 +15,13 @@ export type SongData = {
     midLink: string,
     visualizations: [{
         visualizationType: string,
-        visualization: string | mongoose.Types.ObjectId | VisualizationModel
+        visualization: string | mongoose.Types.ObjectId | VisualizationDoc
     }],
     externalSonglink?: string,
     pdfLink?: string,
 };
 
-export type SongModel = mongoose.Document & SongData;
+export type SongDoc = mongoose.Document & SongData;
 
 const songSchema = new mongoose.Schema({
     _id: {
