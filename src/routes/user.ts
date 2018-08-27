@@ -2,7 +2,7 @@ import async from "async";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import passport from "passport";
-import { default as User, UserModel, AuthToken } from "../models/User";
+import { default as User, UserDoc, AuthToken } from "../models/User";
 import { Request, Response, NextFunction, Router } from "express";
 import { IVerifyOptions } from "passport-local";
 import { WriteError } from "mongodb";
@@ -38,7 +38,7 @@ export let postLogin = (req: Request, res: Response, next: NextFunction) => {
     return res.redirect("/login");
   }
 
-  passport.authenticate("local", (err: Error, user: UserModel, info: IVerifyOptions) => {
+  passport.authenticate("local", (err: Error, user: UserDoc, info: IVerifyOptions) => {
     if (err) { return next(err); }
     if (!user) {
       req.flash("errors", info.message);
@@ -145,7 +145,7 @@ export let postUpdateProfile = (req: Request, res: Response, next: NextFunction)
     return res.redirect("/account");
   }
 
-  User.findById(req.user.id, (err, user: UserModel) => {
+  User.findById(req.user.id, (err, user: UserDoc) => {
     if (err) { return next(err); }
     user.email = req.body.email || "";
     user.profile.name = req.body.name || "";
@@ -179,7 +179,7 @@ export let postUpdatePassword = (req: Request, res: Response, next: NextFunction
     return res.redirect("/account");
   }
 
-  User.findById(req.user.id, (err, user: UserModel) => {
+  User.findById(req.user.id, (err, user: UserDoc) => {
     if (err) { return next(err); }
     user.password = req.body.password;
     user.save((err: WriteError) => {
@@ -281,7 +281,7 @@ export let postReset = (req: Request, res: Response, next: NextFunction) => {
           });
         });
     },
-    function sendResetPasswordEmail(user: UserModel, done: Function) {
+    function sendResetPasswordEmail(user: UserDoc, done: Function) {
       const transporter = nodemailer.createTransport({
         service: "SendGrid",
         auth: {
@@ -355,7 +355,7 @@ export let postForgot = (req: Request, res: Response, next: NextFunction) => {
         });
       });
     },
-    function sendForgotPasswordEmail(token: AuthToken, user: UserModel, done: Function) {
+    function sendForgotPasswordEmail(token: AuthToken, user: UserDoc, done: Function) {
       const transporter = nodemailer.createTransport({
         service: "SendGrid",
         auth: {

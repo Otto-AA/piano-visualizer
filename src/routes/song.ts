@@ -6,7 +6,7 @@ import { Router } from "express";
 import { Request, Response, NextFunction } from "express";
 import { IVerifyOptions } from "passport-local";
 import { Types, Mongoose, Document } from "mongoose";
-import Song, { SongModel, SongData, songSchemaValidator } from "../models/Song";
+import Song, { SongDoc, SongData, songSchemaValidator } from "../models/Song";
 import { checkSchema, ValidationSchema } from "express-validator/check";
 import Visualization from "../models/Visualization";
 import { ObjectId } from "bson";
@@ -64,10 +64,10 @@ async function checkSongConflictsPreSaving(songData: SongData): Promise<SongData
     return songData;
 }
 
-function saveSong(songData: SongData): Promise<SongModel> {
+function saveSong(songData: SongData): Promise<SongDoc> {
     return new Promise((resolve, reject) => {
         const song = new Song(songData);
-        song.save((err, savedSong: SongModel) => {
+        song.save((err, savedSong: SongDoc) => {
             if (err || !savedSong) {
                 return reject(err);
             }

@@ -62,7 +62,7 @@ app.use(session({
   },
   store: (process.env.NODE_ENV !== "test")  ?
     new MongoStore({
-      url: mongoUrl,
+      url: MONGODB_URI,
       autoReconnect: true
     })
     : new MemoryStore()
