@@ -16,15 +16,10 @@ import * as passportConfig from "../config/passport";
 
 const router = Router();
 
-export let postSong = [passportConfig.isAuthenticated, checkSchema(songSchemaValidator), (req: Request, res: Response, next: NextFunction) => {
-    const errors = req.validationErrors();
-
-    if (errors) {
-        req.flash("errors", errors);
-        return res.status(400).send(errors);
-    }
-
+export let postSong = [passportConfig.isAuthenticated, (req: Request, res: Response, next: NextFunction) => {
     return new Promise((resolve, reject) => resolve(getSongDataFromRequest(req)))
+        .then(validateSongData)
+        .catch(error => res.status(400).send(error))
         .then(checkSongConflictsPreSaving)
         .then(saveSong)
         .then(savedSong => res.status(200).send(savedSong))
@@ -32,7 +27,7 @@ export let postSong = [passportConfig.isAuthenticated, checkSchema(songSchemaVal
             if (error.message === "song name conflict") {
                 return res.status(409).send({ error });
             }
-            return error;
+            return next(error);
         })
         .catch(next);
 }];
@@ -53,6 +48,11 @@ function getSongDataFromRequest(req: Request): SongData {
     }
 
     return songData;
+}
+
+async function validateSongData(songData: SongData): Promise<SongData> {
+    const song = new Song(songData);
+    return song.validate().then(() => songData);
 }
 
 async function checkSongConflictsPreSaving(songData: SongData): Promise<SongData> {
