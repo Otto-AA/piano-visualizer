@@ -1,14 +1,12 @@
-language: node_js
-node_js:
-  - 8.10.0
-services:
-  - mongodb
-env:
-  global:
-    - MONGO_URL="mongodb://localhost:27017/test"
-    - DOMAIN="piano-visualizer.herokuapp.com"
-    - SESSION_SECRET="cats"
-    - NODE_ENV="development"
-    - LOG_LEVEL=error
-before_script:
-  - sleep 15
+
+{
+  "language": "node_js",
+  "node_js": "8",
+  "services": [
+    "mongodb"
+  ],
+  "script": [
+    "npm run build",
+    "npm run test"
+  ]
+}
