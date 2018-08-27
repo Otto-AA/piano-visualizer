@@ -1,6 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import { SongFactory } from "./factory/Factory";
+import { PromiseProvider } from "mongoose";
 
 const chai = require("chai");
 const expect = chai.expect;
@@ -8,9 +9,9 @@ const expect = chai.expect;
 
 jest.mock("../src/config/passport");
 const passportConfig: jest.Mocked<{ isAuthenticated: any }> = require("../src/config/passport");
-const mockLogin = () => passportConfig.isAuthenticated.mockImplementation((req, res, next) => {
+const mockLogin = (userId = "5b741d288b95041d9c171aab") => passportConfig.isAuthenticated.mockImplementation((req, res, next) => {
     req.user = {
-        id: "5b741d288b95041d9c171aab"
+        id: userId
     };
     return next();
 });
@@ -18,22 +19,27 @@ const mockLogin = () => passportConfig.isAuthenticated.mockImplementation((req, 
 
 describe("POST /song", () => {
     it("should respond with 200 and song", async () => {
-        mockLogin();
-        const songData = await SongFactory.getSample();
-        console.log("songData", songData);
-        return request(app).post("/song")
-            .send(songData)
-            .expect(200)
-            .expect(res => expect(res).not.to.be.undefined);
+        const samples = await SongFactory.getValidSamples(5);
+        const promises = samples.map(sample => {
+            mockLogin(sample.userId);
+            return request(app).post("/song")
+                .send(sample)
+                .expect(200);
+        });
+        return Promise.all(promises);
     });
     it("should respond with 400 given invalid arguments", async () => {
-        mockLogin();
-        const invalidSongData = await SongFactory.getInvalidSample();
-        console.log("invalidSongData", invalidSongData);
+        const invalidSamples = await SongFactory.getInvalidSamples(5);
+        const promises = invalidSamples.map(invalidSongData => {
+            if (typeof invalidSongData.userId !== "string")
+                return new Promise((resolve) => resolve());
 
-        return request(app).post("/song")
-            .send(invalidSongData)
-            .expect(400)
-            .expect(res => expect(res).not.to.be.undefined);
+            mockLogin(invalidSongData.userId);
+
+            return request(app).post("/song")
+                .send(invalidSongData)
+                .expect(400);
+        });
+        return Promise.all(promises);
     });
 });

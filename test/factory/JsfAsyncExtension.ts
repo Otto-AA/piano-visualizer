@@ -64,7 +64,7 @@ export class JsfAsyncExtension {
         return obj;
     }
 
-    async resolveByPropPath(propPath, { instanceId = 0 } = {}) {
+    async resolveByPropPath(propPath, { instanceId = this.getUnusedInstanceId() } = {}) {
         const instance = await this.getResultInstance(instanceId);
         try {
             const val = getPropertyByPath(instance, propPath);
@@ -91,6 +91,14 @@ export class JsfAsyncExtension {
 
     getGeneratedData() {
         return promisify(this.generator);
+    }
+
+    private getUnusedInstanceId() {
+        const prefix = "__";
+        let counter = 0;
+        while (this.instances.hasOwnProperty(prefix + counter))
+            counter++;
+        return prefix + counter;
     }
 }
 

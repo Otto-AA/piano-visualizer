@@ -40,7 +40,7 @@ class Factory<SampleData extends { [k: string]: any }, SampleDoc extends mongoos
     }
 
     public getInvalidSample(): Promise<any> {
-        return this.getSample().then(makeSampleInvalid);
+        return this.getSample().then(sample => changeMultipleProperties(sample, 1));
     }
 
     public getValidSamples(n): Promise<SampleData[]> {
@@ -99,7 +99,7 @@ function extendJsfWithFactoryModels(extensionName: string, factories: Factory<an
         const name = factory.modelName;
         const model = mongoose.model(factory.modelName);
         const structure = getStructureFromMongooseSchema(model.schema);
-        const getDocObject = () => factory.getDoc().then(doc => doc.toObject());
+        const getDocObject = () => factory.getDoc().then(mongooseDocToObject);
         const extension = new JsfAsyncExtension(getDocObject, structure);
         asyncExtensionGroup.addExtension(factory.modelName, extension);
     });
@@ -108,13 +108,25 @@ function extendJsfWithFactoryModels(extensionName: string, factories: Factory<an
     return asyncExtensionGroup;
 }
 
-function makeSampleInvalid(sample) {
-    const numValues = getNestedKeys(sample).length;
-    const targetIndex = Math.floor(Math.random() * numValues);
+function mongooseDocToObject(doc: mongoose.Document) {
+    // Probably not the best solution. Based on: https://github.com/Automattic/mongoose/issues/2790
+    return JSON.parse(JSON.stringify(doc.toObject()));
+}
 
-    forEachPropInNestedObj(sample, (obj, key, index) => (index === targetIndex) ? obj[key] = changeValueType(obj[key]) : {});
+function changeMultipleProperties(obj, changeCount) {
+    const numberOfProperties = getNestedKeys(obj).length;
+    const getProbabilityFromIndex = index => (index * changeCount) / numberOfProperties;
+    let index = 0;
 
-    return sample;
+    forEachPropInNestedObj(obj, (nestedObj, key, val) => {
+        index++;
+        if (getProbabilityFromIndex(index) > Math.random()) {
+            nestedObj[key] = changeValueType(val);
+            changeCount--;
+        }
+    });
+
+    return obj;
 }
 
 
@@ -156,15 +168,14 @@ function getNestedKeys (obj) {
     return [...keysForNonObjects, ...nestedKeys];
 }
 
-function forEachPropInNestedObj(obj, callback, indexObj = { index: 0 }) {
+function forEachPropInNestedObj(obj, callback) {
     const keys = Object.keys(obj);
 
     keys.forEach(key => {
-        callback(obj, key, indexObj.index);
-        indexObj.index++;
+        callback(obj, key, obj[key]);
 
         if (typeof obj[key] === "object") {
-            return forEachPropInNestedObj(obj[key], callback, indexObj);
+            return forEachPropInNestedObj(obj[key], callback);
         }
     });
 }
