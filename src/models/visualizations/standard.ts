@@ -1,21 +1,5 @@
 import mongoose from "mongoose";
-import { isNumber } from "util";
-
-function NoCastString(key: any, options: any) {
-  mongoose.SchemaType.call(this, key, options, "NoCastString");
-}
-NoCastString.prototype = Object.create(mongoose.SchemaType.prototype);
-
-NoCastString.prototype.cast = function(str: any) {
-  if (typeof str !== "string") {
-    throw new Error(`NoCastString: ${str} is not a string`);
-  }
-  return str;
-};
-
-// TODO: Check if this is possible to do correctly
-// @ts-ignore
-mongoose.Schema.Types.NoCastString = NoCastString;
+import { NoCastString, NoCastNumber, NoCastBoolean } from "../modelUtils";
 
 export type VisualizationStandardDoc = VisualizationStandardData & mongoose.Document;
 
@@ -58,7 +42,7 @@ const isColorString = (str: string) => {
 };
 
 const threeColorGradient = {
-  type: [String],
+  type: [NoCastString],
   validate: (gradient: string[]) => gradient.length === 3 && gradient.every(isColorString)
 };
 
@@ -75,7 +59,7 @@ const visualizationStandardSchema = new mongoose.Schema({
     bar: {
       gradient: { ...threeColorGradient, required: true },
       width: {
-        type: Number,
+        type: NoCastNumber,
         min: 1,
         required: true
       }
@@ -84,8 +68,8 @@ const visualizationStandardSchema = new mongoose.Schema({
   pianoVisualization: {
     key: {
       border: {
-        white: { type: Boolean, required: true },
-        black: { type: Boolean, required: true },
+        white: { type: NoCastBoolean, required: true },
+        black: { type: NoCastBoolean, required: true },
         color: { type: NoCastString, required: true }
       },
       pressedColor: { type: NoCastString, required: true }
