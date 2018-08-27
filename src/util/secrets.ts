@@ -1,6 +1,7 @@
 import logger from "./logger";
 import dotenv from "dotenv";
 import fs from "fs";
+import uuidv1 from "uuid/v1";
 
 if (fs.existsSync(".env")) {
     logger.debug("Using .env file to supply config environment variables");
@@ -16,7 +17,7 @@ const isTest = ENVIRONMENT === "test";
 
 export const SESSION_SECRET = process.env["SESSION_SECRET"];
 export const MONGODB_URI = isProduction ? process.env["MONGODB_URI"]
-    : isTest ? `${process.env["MONGODB_URI_LOCAL"]}/${getTestSuiteName()}`
+    : isTest ? `${process.env["MONGODB_URI_LOCAL"]}/${uuidv1()}`
     : process.env["MONGODB_URI_LOCAL"];
 
 if (!SESSION_SECRET) {
@@ -27,13 +28,4 @@ if (!SESSION_SECRET) {
 if (!MONGODB_URI) {
     logger.error("No mongo connection string. Set MONGODB_URI environment variable.");
     process.exit(1);
-}
-
-function getTestSuiteName() {
-    if (typeof process.env["TEST_SUITE"] === typeof undefined) {
-        console.warn("To make tests run in separate databases, the environment variable TEST_SUITE must be defined");
-        throw new Error("To make tests run in separate databases, the environment variable TEST_SUITE must be defined");
-    }
-
-    return process.env["TEST_SUITE"];
 }

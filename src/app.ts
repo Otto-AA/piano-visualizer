@@ -14,6 +14,7 @@ import passport from "passport";
 import expressValidator from "express-validator";
 import bluebird from "bluebird";
 import { MONGODB_URI, SESSION_SECRET } from "./util/secrets";
+import * as db from "./db";
 
 const MongoStore = mongo(session);
 
@@ -37,9 +38,7 @@ import * as passportConfig from "./config/passport";
 const app = express();
 
 // Connect to MongoDB
-const mongoUrl = MONGODB_URI;
-(<any>mongoose).Promise = bluebird;
-mongoose.connect(mongoUrl, {useMongoClient: true}).then(
+db.connect().then(
   () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ },
 ).catch(err => {
   console.log("MongoDB connection error. Please make sure MongoDB is running. " + err);
@@ -63,7 +62,7 @@ app.use(session({
   },
   store: (process.env.NODE_ENV !== "test")  ?
     new MongoStore({
-      url: mongoUrl,
+      url: MONGODB_URI,
       autoReconnect: true
     })
     : new MemoryStore()

@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import shortid from "shortid";
-import { VisualizationModel } from "./Visualization";
+import { VisualizationDoc } from "./Visualization";
 import { ValidationSchema } from "express-validator/check";
+import { NoCastString } from "./modelUtils";
 
 // TODO: This is untested. Remove me when this works
 
@@ -9,27 +10,27 @@ import { ValidationSchema } from "express-validator/check";
 
 export type SongData = {
     name: string,
-    userId: string | mongoose.Types.ObjectId,
+    userId: string,
     type: string,
     mp3Link: string,
     midLink: string,
     visualizations: [{
         visualizationType: string,
-        visualization: string | mongoose.Types.ObjectId | VisualizationModel
+        visualization: string | mongoose.Types.ObjectId | VisualizationDoc
     }],
     externalSonglink?: string,
     pdfLink?: string,
 };
 
-export type SongModel = mongoose.Document & SongData;
+export type SongDoc = mongoose.Document & SongData;
 
 const songSchema = new mongoose.Schema({
     _id: {
-        type: String,
+        type: NoCastString,
         default: shortid.generate
     },
     name: {
-        type: String,
+        type: NoCastString,
         required: true
     },
     userId: {
@@ -38,31 +39,31 @@ const songSchema = new mongoose.Schema({
         required: true
     },
     type: {
-        type: String,
+        type: NoCastString,
         enum: ["composition", "improvisation", "cover"],
         required: true
     },
     externalSongLink: {
-        type: String,
+        type: NoCastString,
         required: false
     },
     mp3Link: {
-        type: String,
+        type: NoCastString,
         required: true
     },
     midLink: {
-        type: String,
+        type: NoCastString,
         required: true
     },
     pdfLink: {
-        type: String,
+        type: NoCastString,
         required: false
     },
     visualizations: {
         // TODO: Check if using an object instead of an array is possible here
         type: [{
             visualizationType: {
-                type: String,
+                type: NoCastString,
                 enum: ["standard"],
             },
             visualization: {

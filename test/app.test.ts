@@ -1,5 +1,3 @@
-process.env["TEST_SUITE"] = "app";
-
 import request from "supertest";
 import app from "../src/app";
 

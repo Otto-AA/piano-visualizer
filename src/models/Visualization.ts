@@ -3,11 +3,14 @@ import autopopulate from "mongoose-autopopulate";
 
 // TODO: This is untested. Remove me when this works
 
-export type VisualizationModel = mongoose.Document & {
+export type VisualizationData = {
   visualizationType: string,
+  type: "string",
   usedBySongs: string[],
   data: { [k: string]: any }
 };
+
+export type VisualizationDoc = VisualizationData & mongoose.Document;
 
 const visualizationSchema = new mongoose.Schema({
   visualizationType: {
