@@ -1,10 +1,8 @@
 import request from "supertest";
+import { expect } from "chai";
 import app from "../src/app";
 import { SongFactory } from "./factory/Factory";
 import { PromiseProvider } from "mongoose";
-
-const chai = require("chai");
-const expect = chai.expect;
 
 
 jest.mock("../src/config/passport");
@@ -24,7 +22,7 @@ describe("POST /song", () => {
             mockLogin(sample.userId);
             return request(app).post("/song")
                 .send(sample)
-                .expect(200);
+                .expect(({ status }) => expect(status).to.be.oneOf([200, 407]));
         });
         return Promise.all(promises);
     });
@@ -35,10 +33,9 @@ describe("POST /song", () => {
                 return new Promise((resolve) => resolve());
 
             mockLogin(invalidSongData.userId);
-
             return request(app).post("/song")
                 .send(invalidSongData)
-                .expect(400);
+                .expect(({ status }) => expect(status).to.be.oneOf([400, 407]));
         });
         return Promise.all(promises);
     });
