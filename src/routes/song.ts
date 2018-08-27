@@ -38,7 +38,7 @@ function getSongDataFromRequest(req: Request): SongData {
         user: { id: userId }
     } = req;
 
-    const songData: SongData = { name, type, mp3Link, midLink, visualizations, userId: Types.ObjectId(userId) };
+    const songData: SongData = { name, type, mp3Link, midLink, visualizations, userId };
 
     if (req.body.pdfLink) {
         songData.pdfLink = req.body.pdfLink;
