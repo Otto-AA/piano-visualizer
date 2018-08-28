@@ -17,7 +17,7 @@ const isTest = ENVIRONMENT === "test";
 
 export const SESSION_SECRET = process.env["SESSION_SECRET"];
 export const MONGODB_URI = isProduction ? process.env["MONGODB_URI"]
-    : isTest ? `${process.env["MONGODB_URI_LOCAL"]}/${uuidv1()}`
+    : isTest ? `${process.env["MONGODB_URI_LOCAL"]}/test_${uuidv1()}`
     : process.env["MONGODB_URI_LOCAL"];
 
 if (!SESSION_SECRET) {

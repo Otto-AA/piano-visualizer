@@ -7,14 +7,7 @@ process.env.NODE_ENV = "test";
 jest.setTimeout(10 * 1000);
 
 beforeEach(() => {
-    const CONNECTION_STATES = {
-        DISCONNECTED: 0,
-        CONNECTED: 1,
-        CONNECTING: 2,
-        DISCONNECTING: 3
-    };
-
-    if (mongoose.connection.readyState === CONNECTION_STATES.DISCONNECTED) {
+    if (mongoose.connection.readyState === db.CONNECTION_STATES.DISCONNECTED) {
         console.log("Manually connecting to database as no connections were found");
         return db.connect();
     }
@@ -27,4 +20,9 @@ beforeEach(() => {
     Object.keys(collections)
         .map(key => collections[key])
         .forEach(collection => collection.remove({}));
+});
+
+afterAll(() => {
+    // NOTE: This apparently doesn't remove all databases despite throwing no error
+    return db.drop();
 });
