@@ -1,22 +1,10 @@
-import async, { nextTick } from "async";
-import crypto from "crypto";
-import nodemailer from "nodemailer";
-import passport from "passport";
 import { Router } from "express";
 import { Request, Response, NextFunction } from "express";
-import { IVerifyOptions } from "passport-local";
-import { Types, Mongoose, Document } from "mongoose";
-import Song, { SongDoc, SongData, songSchemaValidator } from "../models/Song";
-import { checkSchema, ValidationSchema } from "express-validator/check";
-import Visualization from "../models/Visualization";
-import { ObjectId } from "bson";
-import { resolve } from "url";
+import Song, { SongDoc, SongData } from "../models/Song";
 import * as passportConfig from "../config/passport";
 
 
-const router = Router();
-
-export let postSong = [passportConfig.isAuthenticated, (req: Request, res: Response, next: NextFunction) => {
+export const postSong = [passportConfig.isAuthenticated, (req: Request, res: Response, next: NextFunction) => {
     return new Promise((resolve, reject) => resolve(getSongDataFromRequest(req)))
         .then(validateSongData)
         .catch(error => res.status(400).send(error))
@@ -28,26 +16,12 @@ export let postSong = [passportConfig.isAuthenticated, (req: Request, res: Respo
                 return res.status(409).send({ error });
             }
             return next(error);
-        })
-        .catch(next);
+        });
 }];
 
 function getSongDataFromRequest(req: Request): SongData {
-    const {
-        body: { name, type, mp3Link, midLink, visualizations },
-        user: { id: userId }
-    } = req;
-
-    const songData: SongData = { name, type, mp3Link, midLink, visualizations, userId };
-
-    if (req.body.pdfLink) {
-        songData.pdfLink = req.body.pdfLink;
-    }
-    if (req.body.externalSonglink) {
-        songData.externalSonglink = req.body.externalSonglink;
-    }
-
-    return songData;
+    const userId = req.user.userId;
+    return { userId, ...req.body };
 }
 
 async function validateSongData(songData: SongData): Promise<SongData> {
@@ -76,6 +50,8 @@ function saveSong(songData: SongData): Promise<SongDoc> {
     });
 }
 
+
+const router = Router();
 router.use(...postSong);
 
 export default router;

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import shortid from "shortid";
 import { VisualizationDoc } from "./Visualization";
-import { ValidationSchema } from "express-validator/check";
 import { NoCastString } from "./modelUtils";
 
 // TODO: This is untested. Remove me when this works
@@ -61,6 +60,7 @@ const songSchema = new mongoose.Schema({
     },
     visualizations: {
         // TODO: Check if using an object instead of an array is possible here
+        // TODO: Make it NoCastArray if possible
         type: [{
             visualizationType: {
                 type: NoCastString,
@@ -74,87 +74,6 @@ const songSchema = new mongoose.Schema({
         }]
     }
 }, { timestamps: true, strict: true });
-
-
-const songSchemaValidator: ValidationSchema = {};
-songSchemaValidator.name = {
-    in: ["body", "query"],
-    isLength: {
-        errorMessage: "name should be at least 1 chars long",
-        options: [{ min: 1 }]
-    },
-    isAlphanumeric: {
-        errorMessage: "name may only contain letters and numbers"
-    }
-};
-
-songSchemaValidator.type = {
-    in: ["body", "query"],
-    custom: {
-        errorMessage: "type must be: composition, improvisation or cover",
-        options: [(type: string) => ["composition", "improvisation", "cover"].indexOf(type) > -1]
-    }
-};
-
-songSchemaValidator.mp3Link = {
-    in: ["body", "query"],
-    isURL: {
-        errorMessage: "Must be a URL"
-    }
-};
-
-songSchemaValidator.midLink = {
-    in: ["body", "query"],
-    isURL: {
-        errorMessage: "Must be a URL"
-    }
-};
-
-songSchemaValidator.pdfLink = {
-    in: ["body", "query"],
-    isURL: {
-        errorMessage: "Must be a URL"
-    },
-    optional: true
-};
-
-songSchemaValidator.externalSonglink = {
-    in: ["body", "query"],
-    isURL: {
-        errorMessage: "Must be a URL"
-    },
-    optional: true
-};
-
-// @ts-ignore
-songSchemaValidator.visualizations = {
-    in: ["body", "query"],
-    isArray: {
-        errorMessage: "must be an array"
-    },
-    custom: {
-        options: [(visualizations: { visualizationType: string, visualization: string }[]) => {
-            if (!visualizations.length) {
-                throw new Error("At least one visualization id must be provided");
-            }
-            visualizations.forEach(({ visualizationType, visualization }) => {
-                if (typeof visualization !== "string" || typeof visualizationType !== "string") {
-                    throw new Error("visualizationType and visualization must be strings");
-                }
-            });
-            return true;
-        }]
-    },
-    customSanitizer: {
-        // TODO: Update this somehow and then remove the @ts-ignore in front of songSchemaValidator.visualizations
-        // Due to a bug (?) the customSanitizer won't get called for arrays. See https://github.com/express-validator/express-validator/issues/618
-        options: [(visualizations: { visualizationType: string, visualization: string }[]) => {
-            return visualizations.map(({ visualizationType, visualization }) => { return { visualizationType, visualization: mongoose.Types.ObjectId(visualization) }; });
-        }]
-    }
-};
-
-export { songSchemaValidator };
 
 
 const Song = mongoose.model("Song", songSchema);
