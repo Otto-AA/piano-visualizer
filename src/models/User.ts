@@ -2,7 +2,7 @@ import bcrypt from "bcrypt-nodejs";
 import crypto from "crypto";
 import mongoose from "mongoose";
 
-export type UserModel = mongoose.Document & {
+export type UserData = {
   email: string,
   password: string,
   passwordResetToken: string,
@@ -11,10 +11,11 @@ export type UserModel = mongoose.Document & {
   profile: {
     name: string,
     website: string,
-    picture: string,
     description: string
-  },
+  }
+};
 
+export type UserDoc = UserData & mongoose.Document & {
   comparePassword: comparePasswordFunction,
   gravatar: (size: number) => string
 };
@@ -35,7 +36,6 @@ const userSchema = new mongoose.Schema({
   profile: {
     name: { type: String, unique: true, required: true },
     website: String,
-    picture: String,
     description: String
   }
 }, { timestamps: true, strict: true });
