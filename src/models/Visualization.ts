@@ -5,7 +5,6 @@ import autopopulate from "mongoose-autopopulate";
 
 export type VisualizationData = {
   visualizationType: string,
-  type: "string",
   usedBySongs: string[],
   data: { [k: string]: any }
 };
