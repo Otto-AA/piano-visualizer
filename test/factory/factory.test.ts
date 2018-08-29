@@ -1,11 +1,10 @@
-import { VisualizationStandardFactory, VisualizationFactory, SongFactory, UserFactory } from "./Factory";
+import { VisualizationStandardFactory, SongFactory, UserFactory } from "./Factory";
 import mongoose from "mongoose";
 
 describe("Factory", function () {
 
     const factories = {
         VisualizationStandard: VisualizationStandardFactory,
-        Visualization: VisualizationFactory,
         Song: SongFactory,
         User: UserFactory
     };

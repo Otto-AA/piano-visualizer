@@ -34,15 +34,12 @@ export const songSchema = {
             items: [{
                 type: "object",
                 properties: {
-                    visualizationType: {
-                        type: "string",
-                        enum: ["standard"]
-                    },
-                    visualization: {
-                        Factory: "Visualization._id"
+                    kind: "standard",
+                    item: {
+                        Factory: "VisualizationStandard._id"
                     }
                 },
-                required: ["visualizationType", "visualization"]
+                required: ["kind", "item"]
             }]
         }
     },

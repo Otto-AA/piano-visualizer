@@ -8,14 +8,11 @@ import { visualizationStandardSchema } from "./schemas/visualizationStandard";
 import { songSchema } from "./schemas/song";
 import VisualizationStandard, { VisualizationStandardData, VisualizationStandardDoc } from "../../src/models/visualizations/standard";
 import Song, { SongData, SongDoc } from "../../src/models/Song";
-import Visualization, { VisualizationData, VisualizationDoc } from "../../src/models/Visualization";
-import { visualizationSchema } from "./schemas/visualization";
 import User, { UserData, UserDoc } from "../../src/models/User";
 import { userSchema } from "./schemas/user";
 
 // Make sure typescript loads the modules
 VisualizationStandard;
-Visualization;
 Song;
 User;
 
@@ -76,17 +73,12 @@ class Factory<SampleData extends { [k: string]: any }, SampleDoc extends mongoos
 
 
 export const VisualizationStandardFactory = new Factory<VisualizationStandardData, VisualizationStandardDoc>("VisualizationStandard", visualizationStandardSchema);
-export const VisualizationFactory = new Factory<VisualizationData, VisualizationDoc>("Visualization", visualizationSchema);
 export const SongFactory = new Factory<SongData, SongDoc>("Song", songSchema);
 export const UserFactory = new Factory<UserData, UserDoc>("User", userSchema);
-// export const BaseFactory = new Factory<any, mongoose.Document>("Base", schemaBase);
-// export const MiddleFactory = new Factory<any, mongoose.Document>("Middle", schemaMiddle);
-// export const ParentFactory = new Factory<any, mongoose.Document>("Parent", schemaParent);
 
 jsf.extend("faker", () => faker);
 extendJsfWithFactoryModels("Factory", [
     VisualizationStandardFactory,
-    VisualizationFactory,
     SongFactory,
     UserFactory
 ]);

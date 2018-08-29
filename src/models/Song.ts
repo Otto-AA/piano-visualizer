@@ -1,11 +1,9 @@
 import mongoose from "mongoose";
 import shortid from "shortid";
-import { VisualizationDoc } from "./Visualization";
 import { NoCastString } from "./modelUtils";
+import Visualization from "./visualizations/standard";
 
-// TODO: This is untested. Remove me when this works
-
-
+Visualization;
 
 export type SongData = {
     name: string,
@@ -14,8 +12,8 @@ export type SongData = {
     mp3Link: string,
     midLink: string,
     visualizations: [{
-        visualizationType: string,
-        visualization: string | mongoose.Types.ObjectId | VisualizationDoc
+        kind: string,
+        item: string | { [k: string]: any }
     }],
     externalSonglink?: string,
     pdfLink?: string,
@@ -58,21 +56,18 @@ const songSchema = new mongoose.Schema({
         type: NoCastString,
         required: false
     },
-    visualizations: {
-        // TODO: Check if using an object instead of an array is possible here
-        // TODO: Make it NoCastArray if possible
-        type: [{
-            visualizationType: {
-                type: NoCastString,
-                enum: ["standard"],
-            },
-            visualization: {
-                type: mongoose.Schema.Types.ObjectId,
-                required: true,
-                ref: "Visualization"
-            }
-        }]
-    }
+    // TODO: Make it NoCastArray if possible
+    visualizations: [{
+        kind: {
+            type: NoCastString,
+            enum: ["standard"],
+        },
+        item: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            refPath: "visualizations.kind"
+        }
+    }]
 }, { timestamps: true, strict: true });
 
 

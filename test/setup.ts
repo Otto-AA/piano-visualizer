@@ -8,7 +8,6 @@ jest.setTimeout(10 * 1000);
 
 beforeEach(() => {
     if (mongoose.connection.readyState === db.CONNECTION_STATES.DISCONNECTED) {
-        console.log("Manually connecting to database as no connections were found");
         return db.connect();
     }
 });
