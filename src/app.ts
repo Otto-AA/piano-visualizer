@@ -29,6 +29,7 @@ import * as contactController from "./controllers/contact";
 
 import accountRouter from "./routes/user";
 import songRouter from "./routes/song";
+import viewRouter from "./routes/view";
 
 
 // API keys and Passport configuration
@@ -105,5 +106,6 @@ app.get("/api", apiController.getApi);
 
 app.use("/", accountRouter);
 app.use("/song", songRouter);
+app.use("/view", viewRouter);
 
 export default app;

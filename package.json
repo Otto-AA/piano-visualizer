@@ -10,13 +10,14 @@
   "license": "MIT",
   "scripts": {
     "start": "npm run serve",
-    "build": "npm run build-sass && npm run build-ts && npm run tslint && npm run copy-static-assets",
+    "build": "npm run build-sass && npm run webpack && npm run build-ts && npm run tslint && npm run copy-static-assets",
     "postinstall": "npm run build",
     "serve": "node dist/server.js",
     "watch-node": "nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"Sass,TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-sass\" \"npm run watch-ts\" \"npm run watch-node\"",
     "test": "jest --forceExit --coverage --verbose false",
     "watch-test": "npm run test -- --watchAll",
+    "webpack": "webpack",
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
     "build-sass": "node-sass src/public/css/main.scss dist/public/css/main.css",
@@ -33,6 +34,7 @@
     "@types/shortid": "0.0.29",
     "@types/uuid": "^3.4.3",
     "async": "^2.6.0",
+    "babel-loader": "^7.1.5",
     "bcrypt-nodejs": "^0.0.3",
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
@@ -52,11 +54,13 @@
     "nodemailer": "^4.4.1",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "preact": "^8.3.1",
     "pug": "^2.0.0-rc.4",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "shortid": "^2.2.12",
     "uuid": "^3.3.2",
+    "webpack": "^4.17.2",
     "winston": "^2.4.0"
   },
   "devDependencies": {
@@ -85,6 +89,9 @@
     "@types/shelljs": "^0.7.8",
     "@types/supertest": "^2.0.5",
     "@types/winston": "^2.3.7",
+    "babel-core": "^6.26.3",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
     "concurrently": "^3.5.1",
     "faker": "^4.1.0",
@@ -97,6 +104,7 @@
     "ts-jest": "^22.0.4",
     "ts-node": "^5.0.0",
     "tslint": "^5.9.1",
-    "typescript": "^2.7.2"
+    "typescript": "^2.7.2",
+    "webpack-cli": "^3.1.0"
   }
 }
