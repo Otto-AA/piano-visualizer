@@ -3,7 +3,7 @@ const webpack = require("webpack");
 
 module.exports = {
     entry: {
-        standard: "./src/public/js/view/standard.js"
+        standard: "./src/preact/view/standard.js"
     },
     output: {
         path: path.resolve(__dirname, "dist/public/js/view")
