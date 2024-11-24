@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS user (
 CREATE TABLE IF NOT EXISTS admin (
   id INTEGER UNIQUE NOT NULL,
   FOREIGN KEY (id) REFERENCES user (id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS design (
@@ -29,7 +30,9 @@ CREATE TABLE IF NOT EXISTS song (
 );
 
 CREATE TABLE IF NOT EXISTS song_file (
-  song_id INTEGER REFERENCES songs (id) NOT NULL,
+  song_id INTEGER NOT NULL,
   type TEXT CHECK (type in ('mp3', 'mid', 'pdf')) NOT NULL,
-  PRIMARY KEY (song_id, type)
+  PRIMARY KEY (song_id, type),
+  FOREIGN KEY (song_id) REFERENCES songs (id)
+    ON DELETE CASCADE 
 );

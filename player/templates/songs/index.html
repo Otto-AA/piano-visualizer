@@ -49,7 +49,7 @@
 						<h5 class="my-auto">{{song.name}}</h5>
 						<div>
 							<a href="{{url_for('song.edit', id=song.id)}}"><button class="btn btn-info cursor-pointer">Edit</button></a>
-							<button class="btn btn-danger delete-song">Delete</button>
+							<button class="btn btn-danger delete-song" onclick="deleteSong('{{song.name}}', {{song.id}})">Delete</button>
 						</div>
 					</div>
 				</li>
@@ -62,8 +62,7 @@
 	<script src="{{url_for('static', filename='bootstrap/js/bootstrap.js')}}"></script>
 
 	<!-- Own Scripts -->
-	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap_collapse.js')}}"></script>
-	<script type="module" src="{{url_for('static', filename='js/manage.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static', filename='js/manage.js')}}"></script>
 </body>
 
 </html>

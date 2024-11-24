@@ -1,5 +1,6 @@
+import os
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, abort, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.utils import secure_filename
 from player.user import get_file_path
@@ -88,6 +89,7 @@ def upload():
 @login_required
 def edit(id):
     song = get_song_by_id(id)
+    assert_song_owner(song, g.user['id'])
     if request.method == 'POST':
         db = get_db()
         error = f'Not implemented ({id})'
@@ -99,12 +101,21 @@ def edit(id):
 @bp.route('/<int:id>', methods=['DELETE'])
 @login_required
 def delete(id):
-    if request.method == 'POST':
-        db = get_db()
-        error = f'Not implemented ({id})'
+    db = get_db()
+    song = get_song_with_files(id)
+    assert_song_owner(song, g.user['id'])
 
-        flash(error)
-    return render_template('songs/edit.html')
+    file_name = song['file_name']
+    for file_extension in song['files']:
+        path = get_file_path(g.user['id'], f'{file_name}.{file_extension}')
+        os.remove(path)
+    db.execute('DELETE FROM song WHERE id = ?', (id, ))
+    db.commit()
+    return redirect(url_for('index'), code=303)
+
+def assert_song_owner(song, user_id):
+    if song['created_by'] != user_id:
+        abort(403, 'This song is not created by you')
 
 def get_song_by_id(id):
     db = get_db()
@@ -112,6 +123,19 @@ def get_song_by_id(id):
         'SELECT * FROM song WHERE id = ?',
         (id, )
     ).fetchone()
+    return song
+
+def get_song_with_files(song_id):
+    db = get_db()
+    song = db.execute(
+        'SELECT name, file_name, song.type, design, created_by, created_at, updated_at, song_creation, GROUP_CONCAT(file.type) as files '
+        'FROM song INNER JOIN song_file file ON song.id = file.song_id '
+        'WHERE song.id = ? '
+        'GROUP BY name, file_name, song.type, design',
+        (song_id, )
+    ).fetchone()
+    song = dict(song)
+    song['files'] = song['files'].split(',')
     return song
 
 ALLOWED_SONG_EXTENSIONS = ['mp3', 'mid', 'pdf']

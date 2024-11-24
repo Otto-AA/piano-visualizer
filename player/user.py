@@ -1,6 +1,6 @@
 import os
 from flask import (
-    Blueprint, current_app, render_template
+    Blueprint, abort, current_app, render_template
 )
 from flask import send_file
 from player.db import get_db
@@ -15,7 +15,10 @@ def player(user_id):
 @bp.route('/<int:user_id>/file/<string:filename>', methods=['GET'])
 def retrieve_file(user_id, filename):
     file_path = get_file_path(user_id, filename)
-    return send_file(file_path)
+    try:
+        return send_file(file_path)
+    except FileNotFoundError:
+        abort(404, 'File not found')
 
 @bp.route('/<int:user_id>/song', methods=['GET'])
 def all_songs(user_id):
