@@ -1,6 +1,6 @@
 import os
 from flask import Flask, send_from_directory, url_for
-from . import db, auth, song, user
+from . import db, auth, song, user, design
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -23,10 +23,12 @@ def create_app(test_config=None):
             pass
 
     db.init_app(app)
+    design.init_app(app)
     app.register_blueprint(auth.bp)
     app.register_blueprint(song.bp)
     app.add_url_rule('/songs', endpoint='index')
     app.register_blueprint(user.bp)
+    app.register_blueprint(design.bp)
 
 
     # TODO: add this to a base.html template instead

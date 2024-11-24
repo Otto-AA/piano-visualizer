@@ -7,7 +7,7 @@ var design // Currently also used in playerPreview
 const userId = Number(location.pathname.match(/users\/(\d+)\//)[1])
 const defaultUserPath = `/users/${userId}/`;
 const dataDir = `${defaultUserPath}/files/`;
-const designDir = `${defaultUserPath}designs/`;
+const designDir = `/designs/`;
 const VIDEO_QUERY_PARAM = 'v'
 
 class Song {
@@ -23,7 +23,7 @@ class Song {
 		this.composer = Array.isArray(composer) ? composer.join(" & ") : (composer ?? "[unknown]")
 		this.info = info
 		this.type = type;
-		this.designName = design ?? "default";
+		this.designId = design
 	}
 
 	getFileByExtension(fileExtension) {
@@ -186,7 +186,7 @@ class Interface {
 		$('.songlist li:nth-child(' + (this.currentSongIndex + 1) + ')').addClass('active');
 
 		// Change background
-		this.design.loadDesign(this.currentSong.designName)
+		this.design.loadDesign(this.currentSong.designId)
 
 		// Buttons
 		$('.songlist li').click(({ currentTarget }) => {
@@ -196,7 +196,7 @@ class Interface {
 			this.currentSongIndex = $(currentTarget).index();
 
 			// Change background
-			this.design.loadDesign(this.currentSong.designName)
+			this.design.loadDesign(this.currentSong.designId)
 
 			// Load song
 			this.player.stop();
@@ -287,7 +287,7 @@ class Interface {
 
 class Design {
 	constructor() {
-		this.currentDesignName = ''
+		this.currentDesignId = ''
 		this.loadedDesigns = {}
 	}
 
@@ -298,28 +298,49 @@ class Design {
 		this.framer = framer
 	}
 
-	async loadDesign(designName) {
-		if (!(designName in this.loadedDesigns)) {
-			await this._fetchDesign(designName)
+	async loadDesign(designId) {
+		if (!(designId in this.loadedDesigns)) {
+			await this._fetchDesign(designId)
 		}
-		this.applyDesign(this.loadedDesigns[designName]);
+		this.applyDesign(this.loadedDesigns[designId]);
 	}
 
 	applyDesign(design) {
 		console.log('Applying design', design)
-		this._setBackgroundStyle(design.background);
-		this._setPianoStyle(design.visualization.piano);
-		this._setAudioVisualizationStyle(design.visualization.audio);
-		this._setGeneralStyle(design.general);
+		this._setBackgroundStyle({
+			gradient: {
+				color: design.background_color
+				// TODO: Background image
+			}
+		});
+		this._setPianoStyle({
+			key: {
+				border: {
+					white: design.piano_border_white,
+					black: design.piano_border_black,
+					color: design.piano_border_color,
+				},
+				pressed: design.key_pressed_color,
+			}
+		});
+		this._setAudioVisualizationStyle({
+			tick: {
+				gradient: design.tick_gradient,
+				width: design.tick_width,
+			}
+		});
+		this._setGeneralStyle({
+			font: design.font_color
+		});
 	}
 
-	_fetchDesign(designName) {
-		const designPath = `${designDir}json/${encodeURIComponent(designName)}.json`
+	_fetchDesign(designId) {
+		const designPath = `${designDir}${designId}`
 		return new Promise((resolve, reject) => {
 			$.getJSON(designPath)
 				.then(design => {
-					this.currentDesignName = designName;
-					this.loadedDesigns[designName] = design;
+					this.currentDesignId = designId;
+					this.loadedDesigns[designId] = design;
 					resolve();
 				})
 				.fail((jqXHR, textStatus, errorThrown) => {
@@ -426,7 +447,7 @@ $(document).ready(function () {
 				type: songData.type,
 				YT: undefined,
 				date: songData.date,
-				design: '',
+				design: songData.design,
 				files: songData.files,
 				info: ''
 			}))

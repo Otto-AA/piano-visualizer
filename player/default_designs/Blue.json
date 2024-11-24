@@ -1,0 +1,10 @@
+{
+    "background_color": "#002e30",
+    "tick_gradient": "#49e3e8,#5f9ea0,#f5f5f5",
+    "tick_width": 2,
+    "piano_border_white": true,
+    "piano_border_black": true,
+    "piano_border_color": "#408080",
+    "key_pressed_color": "#74b2b4",
+    "font_color": "#92ccca"
+}

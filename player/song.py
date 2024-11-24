@@ -28,7 +28,7 @@ def index():
     return render_template('songs/index.html', songs=songs)
 
 def get_default_design_id():
-    return 0
+    return 1
 
 @bp.route('/upload', methods=['GET', 'POST'])
 @login_required

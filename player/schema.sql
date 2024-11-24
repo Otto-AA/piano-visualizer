@@ -12,7 +12,25 @@ CREATE TABLE IF NOT EXISTS admins (
 
 CREATE TABLE IF NOT EXISTS designs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL
+  name TEXT NOT NULL,
+  created_by INT NOT NULL REFERENCES users (id),
+  background_color TEXT NOT NULL, /* format: #1234fd */
+  tick_gradient TEXT NOT NULL, /* format: #1234fd,#4321df,#ffffff */
+  tick_width INT NOT NULL CHECK(tick_width > 0),
+  piano_border_white BOOLEAN NOT NULL,
+  piano_border_black BOOLEAN NOT NULL,
+  piano_border_color TEXT NOT NULL,
+  key_pressed_color TEXT NOT NULL,
+  font_color TEXT NOT NULL,
+  UNIQUE (name, created_by)
+);
+
+CREATE TABLE IF NOT EXISTS images (
+  design_id INTEGER NOT NULL,
+  image_file_name TEXT NOT NULL,
+  image_creator TEXT NOT NULL,
+  image_link TEXT NOT NULL,
+  FOREIGN KEY (design_id) REFERENCES designs (id)
 );
 
 CREATE TABLE IF NOT EXISTS songs (
@@ -29,7 +47,7 @@ CREATE TABLE IF NOT EXISTS songs (
   UNIQUE (created_by, file_name)
 );
 
-CREATE TRIGGER your_table_trig AFTER UPDATE ON your_table
+CREATE TRIGGER IF NOT EXISTS songs_updated_at AFTER UPDATE ON songs
 BEGIN
   UPDATE songs SET updated_at = datetime('now') WHERE id = NEW.id;
 END;
