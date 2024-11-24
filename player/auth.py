@@ -14,8 +14,22 @@ from player.user import get_user_dir
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
-# TODO: only allow tokens created by admin
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+        
+        return view(**kwargs)
+    
+    return wrapped_view
+
+
+# only logged in users allowed to register
+# to prevent everyone from registering
+# (invite only)
 @bp.route('/register', methods=['GET', 'POST'])
+@login_required
 def register():
     if request.method == 'POST':
         username = request.form['username']
@@ -81,16 +95,6 @@ def load_logged_in_user():
             'SELECT * FROM users WHERE id = ?',
             (user_id, )
         ).fetchone()
-
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for('auth.login'))
-        
-        return view(**kwargs)
-    
-    return wrapped_view
 
 def create_user(username, password):
     db = get_db()
