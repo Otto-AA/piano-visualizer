@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!--
+
+    /\    /\
+   /  \  /  \
+  /____\/____\
+ /     /\     \
+/     /  \     \
+
+-->
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>AA | Music Player</title>
+	
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/upload.css')}}">
+	<link href='https://fonts.googleapis.com/css?family=Quicksand:400,300' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+	<h1 class="text-center">Create new Song</h1>
+	<div class="container">
+		<form method="POST">
+			<div class="form-group">
+				<legend>Song</legend>
+				<input type="text" class="form-control" name="name" placeholder="Song name" required>
+				<br>
+				<input type="text" class="form-control" name="youtubeId" placeholder="Optional Youtube link">
+				<br>
+				<textarea class="form-control" name="info" rows="3" placeholder="Optional song description"></textarea>
+				<br>
+				<select class="form-control" name="type" data-toggle-aa="collapse">
+					<option value="composition">Piano Composition</option>
+					<option value="improvisation">Piano Improvisation</option>
+					<option value="cover" data-target="#composers_group">Piano Cover</option>
+				</select>
+				<div class="form-group collapse" id="composers_group">
+					<textarea class="form-control" name="composers" rows="2" placeholder="Original Composers (one per line)"></textarea>
+				</div>
+				<br>
+				<label for="date">Creation date</label>
+				<input type="date" id="date" name="date" required>
+				<br>
+			</div>
+			<div class="form-group">
+				<legend>Files</legend>
+				<label for="audio_file">Audio (mp3)</label>
+				<input type="file" class="form-control-file" name="audio_file" aria-describedby="audio_file_help" accept=".mp3" >
+				<small id="audio_file_help" class="form-text text-muted">(Required)</small>
+				<label for="midi_file">MIDI (mid)</label>
+				<input type="file" class="form-control-file" name="midi_file" aria-describedby="midi_file_help" accept=".mid" >
+				<small id="audio_file_help" class="form-text text-muted">(Required)</small>
+				<label for="pdf_file">Sheets (pdf)</label>
+				<input type="file" class="form-control-file" name="pdf_file" accept=".pdf">
+			</div>
+			<button type="submit" class="btn btn-primary">Submit</button>
+		</form>
+	</div>
+
+
+
+	<!-- Bootstrap and jQuery Scripts-->
+	<script src="{{url_for('static', filename='jquery/jquery-3.2.1.min.js')}}"></script>
+	<script src="{{url_for('static', filename='bootstrap/js/bootstrap.js')}}"></script>
+
+	<!-- Own Scripts -->
+	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap_collapse.js')}}"></script>
+	<script type="module" src="{{url_for('static', filename='js/upload.js')}}"></script>
+</body>
+
+</html>

@@ -28,24 +28,14 @@
 
 	<title>AA | Music Player</title>
 	
-	<!-- Bootstrap -->
-	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.css">
-
-	<!--Stylesheets-->
-	<link rel="stylesheet" type="text/css" href="/lib/css/user.css">
-	<link rel="stylesheet" type="text/css" href="css/style.css">
-
-	<!-- Fonts -->
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}">
 	<link href='https://fonts.googleapis.com/css?family=Quicksand:400,300' rel='stylesheet' type='text/css'>
 </head>
 
 <body>
-	<h1 class="text-center">Upload your songs</h1>
+	<h1 class="text-center">Editing: {{song.name}}</h1>
 	<div class="container">
-		<form id="updateSong" action="/resources/library/update_song.php" method="post">
-			<!-- [Form submitted by javascript] -->
-			<!-- [Adding input must also be done in the main.js file] -->
-			<input type="hidden" id="action" value="update_song">
+		<form method="POST">
 			<div class="form-group">
 				<legend>Song</legend>
 				<input type="text" class="form-control" id="songName" placeholder="My New Song" required>
@@ -136,14 +126,13 @@
 
 
 	<!-- Bootstrap and jQuery Scripts-->
-	<script src="/vendor/jquery/jquery-3.2.1.min.js"></script>
-	<script src="/vendor/bootstrap/js/bootstrap.js"></script>
-	<script src="/vendor/bootstrap/js/bootstrap-notify.js"></script>
+	<script src="{{url_for('static', filename='jquery/jquery-3.2.1.min.js')}}"></script>
+	<script src="{{url_for('static', filename='bootstrap/js/bootstrap.js')}}"></script>
 
 	
 	<!-- Own Scripts -->
-	<script type="text/javascript" src="./js/bootstrap_collaps.js"></script>
-	<script type="module" src="./js/main.js"></script>
+	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap_collapse.js')}}"></script>
+	<script type="module" src="{{url_for('static', filename='js/edit.js')}}"></script>
 </body>
 
 </html>

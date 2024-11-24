@@ -1,7 +1,9 @@
-import PlayerAPI from '/lib/js/api.js'
-import User from '/lib/js/user.js'
-import PlayerPreview from '/lib/js/playerPreview.js'
-import loginModal from '/lib/js/loginModal.js'
+document.getElementById('date').valueAsDate = new Date()
+
+// import PlayerAPI from '/lib/js/api.js'
+// import User from '/lib/js/user.js'
+// import PlayerPreview from '/lib/js/playerPreview.js'
+// import loginModal from '/lib/js/loginModal.js'
 
 const api = new PlayerAPI();
 loginModal.init('body');
