@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<!--
+
+    /\    /\
+   /  \  /  \
+  /____\/____\
+ /     /\     \
+/     /  \     \
+
+-->
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- General meta data -->
+	<meta name="application-name" content="AA | Music Player">
+	<meta name="description" content="A Player for pieces by AA Piano Music">
+	<meta name="author" content="AA">
+	<!-- Facebook meta data -->
+	<meta property="og:title" content="AA | Music Player">
+	<meta property="og:type" content="website">
+	<meta property="og:image" content="http://www.aapianomusic.bplaced.net/Player/Player.png">
+	<meta property="og:description" content="A Music Player for pieces by AA Piano Music">
+
+
+	<title>AA | Music Player</title>
+	<!-- jQuery -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js" type="text/javascript"></script>
+
+	<!-- Bootstrap -->
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+	<!-- Own Styles -->
+	<link href="./css/style.css" rel="stylesheet" type="text/css">
+
+	<!-- Fonts -->
+	<link href='https://fonts.googleapis.com/css?family=Quicksand:400,300' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+	<!-- Background -->
+	<div class="background"></div>
+	<div class="background fadedOut"></div>
+
+	<!-- Center -->
+	<div class="abs_center square">
+		<!-- Canvas -->
+		<canvas class="loading"></canvas>
+
+		<!-- Trackinfo -->
+		<div id="trackinfo">
+			<h1 class="title"></h1>
+			<h4 class="composer"></h4>
+			<div class="status" data-status="loading">
+				<div class="loading on">
+					<p>Loading...</p>
+				</div>
+				<div class="ready">Ready</div>
+				<div class="error">[Error]</div>
+				<div class="timer">
+					<span class="min">00</span>
+					<span class="sec">00</span>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- Controls -->
+	<div class="controls visible">
+
+		<!-- Toggle -->
+		<div id="toggleControls" class="active">
+			<div class="toggle-bars"></div>
+		</div>
+
+		<!-- Settings -->
+		<div class="settings">
+			<a href="#settings" data-toggle="modal" data-target="#settingsModal">
+				<h4>
+					<span class="glyphicon glyphicon-cog"></span> Settings
+				</h4>
+			</a>
+		</div>
+		<!-- Modal -->
+		<div id="settingsModal" class="modal fade dark" role="dialog">
+			<div class="modal-dialog">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Settings</h4>
+					</div>
+					<div class="modal-body">
+						<section name="background">
+							<h4>Background-Theme</h4>
+							<div class="background-samples"></div>
+							<label name="background-auto" for="background-auto">Automated</label>
+							<input type="checkbox" id="background-auto" checked="true">
+						</section>
+					</div>
+					<div class="modal-footer">
+						<button type="button" id="save-settings" class="btn btn-default" data-dismiss="modal">Save</button>
+						<button type="button" id="cancel-settings" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<!-- Song description -->
+		<div class="description">
+			<span class="title"></span>
+			<span class="composer"></span>
+			<span class="type"></span>
+		</div>
+
+		<!-- Buttons -->
+		<div class="buttons">
+			<div class="row">
+				<button class="btn" id="play" title="Play song">
+					<span class="glyphicon glyphicon-play"></span>
+				</button>
+				<button class="btn" id="pause" title="Pause song">
+					<span class="glyphicon glyphicon-pause"></span>
+				</button>
+				<button class="btn" id="stop" title="Stop song">
+					<span class="glyphicon glyphicon-stop"></span>
+				</button>
+			</div>
+			<div class="row">
+				<span class="volume btn" title="Change volume">
+                    <span class="glyphicon glyphicon-volume-up white"></span>
+				<input type="range" id="volume" min="0" max="100">
+				</span>
+			</div>
+		</div>
+
+		<!-- Songlist -->
+		<div class="songs">
+			<h4>Songlist</h4>
+			<ul class="songlist"></ul>
+		</div>
+
+		<!-- Links -->
+		<div class="links">
+			<h4 class="YT">View on <a href="#" target="_blank">YouTube</a></h4>
+			<ul>Download...
+				<li class="mp3"><a href="#" target="_blank">Mp3</a></li>
+				<li class="mid"><a href="#">Midi</a></li>
+			</ul>
+		</div>
+
+		<!-- Credits -->
+		<div class="credits"></div>
+
+	</div>
+
+	<!-- Piano -->
+	<div class="piano">
+		<div class="white_keys"></div>
+		<div class="black_keys"></div>
+	</div>
+
+	<!-- Logo -->
+	<div class="logo" title="Website by AA">
+		<a href="http://aapianomusic.bplaced.net" target="_blank">
+			<span>A</span>
+			<span>A</span>
+		</a>
+	</div>
+
+
+	<!-- Script -->
+	<script src="./js/main.js" type="module"></script>
+</body>
+
+</html>

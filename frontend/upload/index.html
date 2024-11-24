@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<!--
+
+    /\    /\
+   /  \  /  \
+  /____\/____\
+ /     /\     \
+/     /  \     \
+
+-->
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- General meta data -->
+	<meta name="application-name" content="AA | Music Player">
+	<meta name="description" content="A Player for pieces by AA Piano Music">
+	<meta name="author" content="AA">
+	<!-- Facebook meta data -->
+	<meta property="og:title" content="AA | Music Player">
+	<meta property="og:type" content="website">
+	<meta property="og:image" content="http://www.aapianomusic.bplaced.net/Player/Player.png">
+	<meta property="og:description" content="A Music Player for pieces by AA Piano Music">
+
+
+	<title>AA | Music Player</title>
+	
+	<!-- Bootstrap -->
+	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.css">
+
+	<!--Stylesheets-->
+	<link rel="stylesheet" type="text/css" href="/lib/css/user.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+
+	<!-- Fonts -->
+	<link href='https://fonts.googleapis.com/css?family=Quicksand:400,300' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+	<h1 class="text-center">Upload your songs</h1>
+	<div class="container">
+		<form id="updateSong" action="/resources/library/update_song.php" method="post">
+			<!-- [Form submitted by javascript] -->
+			<!-- [Adding input must also be done in the main.js file] -->
+			<input type="hidden" id="action" value="update_song">
+			<div class="form-group">
+				<legend>Song</legend>
+				<input type="text" class="form-control" id="songName" placeholder="My New Song" required>
+				<br>
+				<input type="text" class="form-control" id="youtubeId" placeholder="Optional Youtube link">
+				<br>
+				<textarea class="form-control" id="songInfo" rows="3" placeholder="Optional song description"></textarea>
+				<br>
+				<select class="form-control" id="type" data-toggle-aa="collapse">
+					<option>Piano Composition</option>
+					<option>Piano Improvisation</option>
+					<option data-target="#composers_group">Piano Cover</option>
+				</select>
+				<div class="form-group collapse" id="composers_group">
+					<textarea class="form-control" id="composers" rows="2" placeholder="Original Composers (one per line)"></textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<legend>Files</legend>
+				<label for="audio_file">Audio (mp3)</label>
+				<input type="file" class="form-control-file" id="audio_file" aria-describedby="audio_file_help" accept=".mp3" required>
+				<small id="audio_file_help" class="form-text text-muted">(Required)</small>
+				<label for="midi_file">MIDI (mid)</label>
+				<input type="file" class="form-control-file" id="midi_file" aria-describedby="midi_file_help" accept=".mid" required>
+				<small id="audio_file_help" class="form-text text-muted">(Required)</small>
+				<label for="pdf_file">Sheets (pdf)</label>
+				<input type="file" class="form-control-file" id="pdf_file" accept=".pdf">
+			</div>
+			<div class="form-group">
+				<legend for="design">Design</legend>
+				<select class="form-control" id="design" data-toggle-aa="collapse">
+					<option>Green</option>
+					<option>Blue</option>
+					<option>Lightblue</option>
+					<option>Grey</option>
+					<option data-target="#custom_design">Custom (Background image, etc.)</option>
+				</select>
+			</div>
+			<div class="form-group collapse" id="custom_design">
+				<div class="form-group">
+					<button type="button" class="btn btn-secondary" id="custom_design_import">Import Design</button>
+					<button type="button" class="btn btn-secondary" id="custom_design_export">Export Design</button>
+				</div>
+				<legend>Background</legend>
+				<label for="custom_design_background_image">Background image</label>
+				<input type="file" accept=".jpg,.png" class="form-control-file" id="custom_design_background_image" data-toggle-aa="collapse" data-target="#custom_design_credits">
+				<span class="collapse" id="custom_design_credits">
+					<label>Creator of the image</label>
+					<input type="text" id="custom_design_background_image_credit_name">
+					<label>Credit link for the image</label>
+					<input type="text" id="custom_design_background_image_credit_link">
+				</span>
+				<label for="custom_design_background_gradient_color">Gradient color</label>
+				<input type="color" id="custom_design_background_gradient_color">
+				<br>
+				<legend>Audio Visualization</legend>
+				<label>Tick color (Gradient)</label>
+				<input type="color" id="custom_design_visualization_audio_tick_gradient_0">
+				<input type="color" id="custom_design_visualization_audio_tick_gradient_1">
+				<input type="color" id="custom_design_visualization_audio_tick_gradient_2">
+				<br>
+				<label>Tick width</label>
+				<input type="number" id="custom_design_visualization_audio_tick_width" min="1" max="12" value="2">
+				<legend>Piano Visualization</legend>
+				<label for="custom_design_visualization_piano_key_border_white">White key border</label>
+				<input type="checkbox" id="custom_design_visualization_piano_key_border_white">
+				<br>
+				<label for="custom_design_visualization_piano_key_border_black">Black key border</label>
+				<input type="checkbox" id="custom_design_visualization_piano_key_border_black">
+				<br>
+				<label for="custom_design_visualization_piano_key_border_color">Border Color</label>
+				<input type="color" id="custom_design_visualization_piano_key_border_color">
+				<br>
+				<label>Key-pressed color</label>
+				<input type="color" id="custom_design_visualization_piano_key_pressed">
+				<legend>General design</legend>
+				<label for="custom_design_general_font_color">Font color</label>
+				<input type="color" id="custom_design_general_font_color">
+			</div>
+			<div class="form-group">
+				<legend>Design preview</legend>
+				<div id="previewContainer"></div>
+			</div>
+			<button type="submit" class="btn btn-primary">Submit</button>
+		</form>
+	</div>
+
+
+
+	<!-- Bootstrap and jQuery Scripts-->
+	<script src="/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<script src="/vendor/bootstrap/js/bootstrap.js"></script>
+	<script src="/vendor/bootstrap/js/bootstrap-notify.js"></script>
+
+	
+	<!-- Own Scripts -->
+	<script type="text/javascript" src="./js/bootstrap_collaps.js"></script>
+	<script type="module" src="./js/main.js"></script>
+</body>
+
+</html>

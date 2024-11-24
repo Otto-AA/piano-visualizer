@@ -1,0 +1,118 @@
+@font-face {
+	font-family: gotham;
+	src: url('/lib/font/Gotham_Rounded_Light.otf');
+}
+@font-face {
+	font-family: gotham;
+	src: url('/lib/font/Gotham_Rounded_Bold.otf');
+	font-weight: bold;
+}
+body, html {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+}
+body {
+	font-family: 'Gotham', 'Arial';
+	color: white;
+  	padding-top: 3.4rem;	/* For fixed-top navbar */
+}
+a:hover {
+	color: #00e2ff;
+}
+hr {
+	background-color: rgba(255, 255, 255, 0.5);
+}
+.bg-transparent {
+	background: rgba(0, 0, 0, 0);
+}
+.bg-dark-transparent {
+	background: rgba(0, 0, 0, 0.5);
+}
+.bg-dark-transparent:focus {
+	background: rgba(0, 0, 0, 0.0);
+}
+.bg-dark-transparent.form-control, 
+.bg-dark-transparent.form-control:focus {
+	color: white;
+}
+#background {
+	position: fixed;
+	width: 100%;
+	height: calc(100% - 3.4rem);
+	top: 3.4rem; 	/* For fixed-top navbar */
+	left: 0;
+	z-index: -10;
+/*	background-image: url(/frontpage/img/Background.png);	gets set by jquery for the background.onload function*/
+	background-position: 0 3rem;
+	background-attachment: fixed;
+	background-size: cover;
+	background-blend-mode: multiply;
+}
+
+/* Insert animations */
+/*
+nav:not(.fade-in-bottom) {
+	opacity: 0;
+	transform: translate(-2rem);
+}
+nav.fade-in-bottom {
+	animation: fade-in-bottom 600ms forwards;
+}
+*/
+.darken:before {
+	content: "";
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	background: rgba(0, 0, 0, 0.7);
+}
+.darken.darken-fade-in:before, 
+.darken.darken-fade-out:before {
+	animation: darken 2s ease-in-out forwards;
+}
+.darken.darken-fade-out:before {
+	animation: darken 2s ease-in-out forwards reverse;
+}
+.fade-in-right, .fade-in-up {
+	opacity: 0;
+	animation-timing-function: ease;
+	animation-fill-mode: forwards;
+	animation-duration: 1.4s;
+}
+.site-loaded .fade-in-right {
+	animation-name: fade-in-right;
+}
+.site-loaded .fade-in-up {
+	animation-name: fade-in-up;
+}
+@keyframes fade-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes fade-in-up {
+	from {
+		opacity: 0;
+		transform: translateY(15px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+@keyframes darken {
+	from {
+		background: rgba(0, 0, 0, 0.2);
+	}
+	to {
+		background: rgba(0, 0, 0, 0.7);
+	}
+}
