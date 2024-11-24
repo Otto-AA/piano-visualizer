@@ -4,18 +4,17 @@ import { Framer, Scene, Tracker } from './audioVisualization.js'
 /** @type {Design} */
 var design // Currently also used in playerPreview
 
-const isTest = location.hostname === 'localhost';
-const defaultUserPath = (isTest) ? "../" : "./";
-const dataDir = `${defaultUserPath}data/`;
+const userId = Number(location.pathname.match(/user\/(\d+)\//)[1])
+const defaultUserPath = `/user/${userId}/`;
+const dataDir = `${defaultUserPath}/file/`;
 const designDir = `${defaultUserPath}designs/`;
-const playerDir = `${defaultUserPath}player/`;
 const VIDEO_QUERY_PARAM = 'v'
 
 class Song {
 	constructor({ name, dataName, composer, type, info, date, files, YT, design }) {
 		this.name = name;
 		this.dataName = dataName;
-		this.date = date.split('_');
+		this.date = date; // TODO: date format
 
 		this._filePath = dataDir + dataName;
 		this.files = files;
@@ -417,10 +416,25 @@ class Design {
 // Main
 $(document).ready(function () {
 	// Get Songlist
-	$.getJSON(`${dataDir}Songlist.json`)
+	$.getJSON(`${defaultUserPath}/song`)
 		.done(function (data) {
 			// Save data as Songlist
-			const songlist = data.map(songData => new Song(songData))
+			const songlist = data.songs.map(songData => new Song({
+				name: songData.name,
+				dataName: songData.file_name,
+				composer: 'A_A',
+				type: songData.type,
+				YT: undefined,
+				date: songData.date,
+				design: '',
+				files: {
+					mp3: true,
+					mid: true,
+					pdf: false,
+				},
+				info: ''
+			}))
+
 			let curSongIndex = 0
 			if (!songlist.length)
 				return alert('Cannot load page because no songs have been added yet.')

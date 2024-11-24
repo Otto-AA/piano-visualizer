@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS song (
   type TEXT CHECK (type in ('composition', 'improvisation', 'cover')) NOT NULL,
   design INTEGER REFERENCES design (id) NOT NULL,
   created_by INTEGER REFERENCES user (id) NOT NULL,
+  /* TODO: Composer (extra table?)*/
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   song_creation DATE DEFAULT CURRENT_TIMESTAMP NOT NULL,

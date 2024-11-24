@@ -1,12 +1,12 @@
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
+from player.user import get_file_path
 from player.db import get_db
 from player.auth import login_required
-from werkzeug.utils import secure_filename
 
 
-bp = Blueprint('songs', __name__, url_prefix='/songs')
+bp = Blueprint('song', __name__, url_prefix='/song')
 
 
 @bp.route('/', methods=['GET'])
@@ -30,18 +30,28 @@ def upload():
     if request.method == 'POST':
 
         name = request.form['name']
-        file_name = secure_filename(name)
         song_type = request.form['type']
         design_id = get_default_design_id()
         creation_date = request.form['date']
-        print(creation_date)
 
-        # TODO: save files and add them to db
+        files = {}
+        file_name = secure_filename(name)
+        for file_type in ['audio', 'midi', 'pdf']:
+            if (file_type + '_file') in request.files:
+                file = request.files[file_type + '_file']
+                # browser submits an empty filename if not specified
+                if hasattr(file, 'filename') and file.filename != '':
+                    if allowed_file(file.filename):
+                        files[file_type] = file
+                    else:
+                        error = 'Invalid file extension. Only allowed: ' + ', '.join(ALLOWED_SONG_EXTENSIONS)
         db = get_db()
         error = None
 
         if len(name) == 0 or len(file_name) == 0:
-            error = 'Please use a different file name'
+            error = 'Please use a different file name.'
+        if 'audio' not in files or 'midi' not in files:
+            error = 'Audio and midi files are required.'
 
         if error is None:
             try:
@@ -53,9 +63,21 @@ def upload():
             except db.IntegrityError:
                 error = f'A song with a similar name already exists.'
             else:
+                for file in files.values():
+                    filename = file_name + '.' + get_file_extension(file.filename)
+                    file_path = get_file_path(g.user['id'], filename)
+                    file.save(file_path)
+                    try:
+                        db.execute(
+                            'INSERT INTO song (name, file_name, type, design, created_by, song_creation) VALUES (?, ?, ?, ?, ?, ?)',
+                            (name, file_name, song_type, design_id, g.user['id'], creation_date)
+                        )
+                        db.commit()
+                    except db.IntegrityError:
+                        pass
                 return redirect(url_for('index'))
-
         # TODO: show error in frontend
+        print(error)
         flash(error)
     return render_template('songs/upload.html')
 
@@ -89,3 +111,10 @@ def get_song_by_id(id):
         (id, )
     ).fetchone()
     return song
+
+ALLOWED_SONG_EXTENSIONS = ['mp3', 'mid', 'pdf']
+def allowed_file(filename):
+    return '.' in filename and get_file_extension(filename) in ALLOWED_SONG_EXTENSIONS
+
+def get_file_extension(filename):
+    return filename.rsplit('.', 1)[1].lower()

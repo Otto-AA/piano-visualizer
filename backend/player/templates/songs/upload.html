@@ -25,7 +25,7 @@
 <body>
 	<h1 class="text-center">Create new Song</h1>
 	<div class="container">
-		<form method="POST">
+		<form method="POST" enctype=multipart/form-data>
 			<div class="form-group">
 				<legend>Song</legend>
 				<input type="text" class="form-control" name="name" placeholder="Song name" required>
@@ -50,10 +50,10 @@
 			<div class="form-group">
 				<legend>Files</legend>
 				<label for="audio_file">Audio (mp3)</label>
-				<input type="file" class="form-control-file" name="audio_file" aria-describedby="audio_file_help" accept=".mp3" >
+				<input type="file" class="form-control-file" name="audio_file" aria-describedby="audio_file_help" accept=".mp3" required>
 				<small id="audio_file_help" class="form-text text-muted">(Required)</small>
 				<label for="midi_file">MIDI (mid)</label>
-				<input type="file" class="form-control-file" name="midi_file" aria-describedby="midi_file_help" accept=".mid" >
+				<input type="file" class="form-control-file" name="midi_file" aria-describedby="midi_file_help" accept=".mid" required>
 				<small id="audio_file_help" class="form-text text-muted">(Required)</small>
 				<label for="pdf_file">Sheets (pdf)</label>
 				<input type="file" class="form-control-file" name="pdf_file" accept=".pdf">

@@ -1,10 +1,12 @@
 import functools
+import os
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 from player.db import get_db
+from player.user import get_user_dir
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -31,6 +33,11 @@ def register():
                     (username, generate_password_hash(password))
                 )
                 db.commit()
+                user = db.execute(
+                    'SELECT * FROM user WHERE username = ?',
+                    (username, )
+                ).fetchone()
+                os.makedirs(get_user_dir(user['id']))
             except db.IntegrityError:
                 error = f'User {username} is already registered.'
             else:
