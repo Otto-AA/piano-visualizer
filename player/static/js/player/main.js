@@ -31,7 +31,7 @@ class Song {
 	}
 
 	hasFile(fileExtension) {
-		return this.files[fileExtension];
+		return this.files.includes(fileExtension);
 	}
 }
 
@@ -427,11 +427,7 @@ $(document).ready(function () {
 				YT: undefined,
 				date: songData.date,
 				design: '',
-				files: {
-					mp3: true,
-					mid: true,
-					pdf: false,
-				},
+				files: songData.files,
 				info: ''
 			}))
 

@@ -1,4 +1,3 @@
-import functools
 import os
 from flask import (
     Blueprint, current_app, render_template
@@ -22,11 +21,18 @@ def retrieve_file(user_id, filename):
 def all_songs(user_id):
     db = get_db()
     songs = db.execute(
-        'SELECT * FROM song WHERE created_by = ?',
+        'SELECT name, file_name, song.type, design, GROUP_CONCAT(file.type) as files '
+        'FROM song INNER JOIN song_file file ON song.id = file.song_id '
+        'WHERE created_by = ? '
+        'GROUP BY name, file_name, song.type, design',
         (user_id, )
     ).fetchall()
-    # TODO: join
-    return { 'songs': [dict(song) for song in songs] }
+    result = []
+    for song in songs:
+        song = dict(song)
+        song['files'] = song['files'].split(',')
+        result.append(song)
+    return { 'songs': result }
 
 def get_file_path(user_id, filename):
     user_dir = get_user_dir(user_id)

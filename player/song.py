@@ -1,6 +1,7 @@
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
+from werkzeug.utils import secure_filename
 from player.user import get_file_path
 from player.db import get_db
 from player.auth import login_required
@@ -54,30 +55,31 @@ def upload():
             error = 'Audio and midi files are required.'
 
         if error is None:
+            cursor = db.cursor()
             try:
-                db.execute(
+                cursor.execute(
                     'INSERT INTO song (name, file_name, type, design, created_by, song_creation) VALUES (?, ?, ?, ?, ?, ?)',
                     (name, file_name, song_type, design_id, g.user['id'], creation_date)
                 )
-                db.commit()
-            except db.IntegrityError:
-                error = f'A song with a similar name already exists.'
-            else:
+                song_id = cursor.lastrowid
                 for file in files.values():
-                    filename = file_name + '.' + get_file_extension(file.filename)
+                    file_extension = get_file_extension(file.filename)
+                    filename = f'{file_name}.{file_extension}'
                     file_path = get_file_path(g.user['id'], filename)
                     file.save(file_path)
                     try:
-                        db.execute(
-                            'INSERT INTO song (name, file_name, type, design, created_by, song_creation) VALUES (?, ?, ?, ?, ?, ?)',
-                            (name, file_name, song_type, design_id, g.user['id'], creation_date)
+                        cursor.execute(
+                            'INSERT INTO song_file (song_id, type) VALUES (?, ?)',
+                            (song_id, file_extension)
                         )
                         db.commit()
                     except db.IntegrityError:
                         pass
+            except db.IntegrityError:
+                error = f'A song with a similar name already exists.'
+            else:
                 return redirect(url_for('index'))
         # TODO: show error in frontend
-        print(error)
         flash(error)
     return render_template('songs/upload.html')
 
