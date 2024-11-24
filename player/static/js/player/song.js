@@ -27,6 +27,7 @@ export class Song {
 
     loadDesign() {
         return fetch(`${this.designDir}${this.designId}`)
+            .then(res => res.json())
     }
 
     toJSON() {
