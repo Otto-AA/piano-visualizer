@@ -8,10 +8,11 @@ const userId = Number(location.pathname.match(/users\/(\d+)\//)[1])
 const defaultUserPath = `/users/${userId}/`;
 const dataDir = `${defaultUserPath}/files/`;
 const designDir = `/designs/`;
+const imageDir = `/images/`;
 const VIDEO_QUERY_PARAM = 'v'
 
 class Song {
-	constructor({ name, dataName, composer, type, info, date, files, YT, design }) {
+	constructor({ name, dataName, composer, type, info, date, files, YT, designId }) {
 		this.name = name;
 		this.dataName = dataName;
 		this.date = date; // TODO: date format
@@ -23,7 +24,7 @@ class Song {
 		this.composer = Array.isArray(composer) ? composer.join(" & ") : (composer ?? "[unknown]")
 		this.info = info
 		this.type = type;
-		this.designId = design
+		this.designId = designId
 	}
 
 	getFileByExtension(fileExtension) {
@@ -309,8 +310,14 @@ class Design {
 		console.log('Applying design', design)
 		this._setBackgroundStyle({
 			gradient: {
-				color: design.background_color
-				// TODO: Background image
+				color: design.background_color,
+			},
+			image: {
+				name: design.image_file_name,
+				credit: {
+					name: design.image_creator,
+					link: design.image_link,
+				}
 			}
 		});
 		this._setPianoStyle({
@@ -330,7 +337,9 @@ class Design {
 			}
 		});
 		this._setGeneralStyle({
-			font: design.font_color
+			font: {
+				color: design.font_color
+			}
 		});
 	}
 
@@ -363,7 +372,7 @@ class Design {
 			if (background.image.name.includes('data:image'))
 				backgroundImagePath = background.image.name;
 			else
-				backgroundImagePath = '/user/_default/designs/img/' + background.image.name;
+				backgroundImagePath = `${imageDir}${background.image.name}`;
 
 			backgroundGradient += ', url("' + backgroundImagePath + '")';
 
@@ -447,7 +456,7 @@ $(document).ready(function () {
 				type: songData.type,
 				YT: undefined,
 				date: songData.date,
-				design: songData.design,
+				designId: songData.design_id,
 				files: songData.files,
 				info: ''
 			}))

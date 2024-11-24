@@ -1,8 +1,7 @@
 import os
 from flask import (
-    Blueprint, abort, current_app, render_template
+    Blueprint, abort, current_app, render_template, send_file
 )
-from flask import send_file
 from player.db import get_db
 
 bp = Blueprint('users', __name__, url_prefix='/users')
@@ -24,10 +23,10 @@ def retrieve_file(user_id, filename):
 def all_songs(user_id):
     db = get_db()
     songs = db.execute(
-        'SELECT name, file_name, songs.type, design, GROUP_CONCAT(file.type) as files '
+        'SELECT name, file_name, songs.type, design_id, GROUP_CONCAT(file.type) as files '
         'FROM songs INNER JOIN song_files file ON songs.id = file.song_id '
         'WHERE created_by = ? '
-        'GROUP BY name, file_name, songs.type, design',
+        'GROUP BY name, file_name, songs.type, design_id',
         (user_id, )
     ).fetchall()
     result = []

@@ -45,7 +45,7 @@ def upload():
             cursor = db.cursor()
             try:
                 cursor.execute(
-                    'INSERT INTO songs (name, file_name, type, design, created_by, song_creation) VALUES (?, ?, ?, ?, ?, ?)',
+                    'INSERT INTO songs (name, file_name, type, design_id, created_by, song_creation) VALUES (?, ?, ?, ?, ?, ?)',
                     (data['name'], data['file_name'], data['type'], design_id, g.user['id'], data['creation_date'])
                 )
                 db.commit()

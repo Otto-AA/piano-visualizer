@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS designs (
   piano_border_color TEXT NOT NULL,
   key_pressed_color TEXT NOT NULL,
   font_color TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   UNIQUE (name, created_by)
 );
 
@@ -30,7 +32,8 @@ CREATE TABLE IF NOT EXISTS images (
   image_file_name TEXT NOT NULL,
   image_creator TEXT NOT NULL,
   image_link TEXT NOT NULL,
-  FOREIGN KEY (design_id) REFERENCES designs (id)
+  FOREIGN KEY (design_id) REFERENCES designs (id),
+  UNIQUE (image_file_name)
 );
 
 CREATE TABLE IF NOT EXISTS songs (
@@ -38,7 +41,7 @@ CREATE TABLE IF NOT EXISTS songs (
   name TEXT NOT NULL,
   file_name TEXT NOT NULL,
   type TEXT CHECK (type in ('composition', 'improvisation', 'cover')) NOT NULL,
-  design INTEGER REFERENCES designs (id) NOT NULL,
+  design_id INTEGER REFERENCES designs (id) NOT NULL,
   created_by INTEGER REFERENCES users (id) NOT NULL,
   /* TODO: Composer (extra table?)*/
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -50,6 +53,11 @@ CREATE TABLE IF NOT EXISTS songs (
 CREATE TRIGGER IF NOT EXISTS songs_updated_at AFTER UPDATE ON songs
 BEGIN
   UPDATE songs SET updated_at = datetime('now') WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS designs_updated_at AFTER UPDATE ON designs
+BEGIN
+  UPDATE designs SET updated_at = datetime('now') WHERE id = NEW.id;
 END;
 
 CREATE TABLE IF NOT EXISTS song_files (

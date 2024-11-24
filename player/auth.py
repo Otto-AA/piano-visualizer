@@ -4,6 +4,8 @@ import os
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
+from flask.cli import with_appcontext
+import click
 from werkzeug.security import check_password_hash, generate_password_hash
 from player.db import get_db
 from player.user import get_user_dir
@@ -28,16 +30,7 @@ def register():
         
         if error is None:
             try:
-                db.execute(
-                    'INSERT INTO users (username, password) VALUES (?, ?)',
-                    (username, generate_password_hash(password))
-                )
-                db.commit()
-                user = db.execute(
-                    'SELECT * FROM users WHERE username = ?',
-                    (username, )
-                ).fetchone()
-                os.makedirs(get_user_dir(user['id']))
+                create_user(username, password)
             except db.IntegrityError:
                 error = f'User {username} is already registered.'
             else:
@@ -98,3 +91,31 @@ def login_required(view):
         return view(**kwargs)
     
     return wrapped_view
+
+def create_user(username, password):
+    db = get_db()
+    db.execute(
+        'INSERT INTO users (username, password) VALUES (?, ?)',
+        (username, generate_password_hash(password))
+    )
+    db.commit()
+    user = db.execute(
+        'SELECT * FROM users WHERE username = ?',
+        (username, )
+    ).fetchone()
+    os.makedirs(get_user_dir(user['id']))
+    return user
+
+
+@click.command('create-user')
+@click.argument('username')
+@click.argument('password')
+@with_appcontext
+def create_user_command(username, password):
+    """create a new user"""
+    user = create_user(username, password)
+    print(f"Created user {user['username']} with id {user['id']}")
+    click.echo('Initialized the default designs')
+
+def init_app(app):
+    app.cli.add_command(create_user_command)
