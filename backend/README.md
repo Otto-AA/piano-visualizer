@@ -1,3 +1,7 @@
+# Installing
+
+Run `pip install -r requirements.txt`.
+
 # API routes
 
 - POST      /user/newpassword
