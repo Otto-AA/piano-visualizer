@@ -2,6 +2,33 @@
 
 Run `pip install -r requirements.txt`.
 
+# Running
+
+1) Set the environment
+
+```bash
+export FLASK_ENV=development
+export FLASK_APP=player
+```
+
+2) initialize database
+
+```bash
+flask init-db
+```
+
+3) create user
+
+```bash
+flask create-user namy passy
+```
+
+4) run server
+
+```bash
+flask run
+```
+
 # API routes
 
 - POST      /users/newpassword
@@ -22,3 +49,4 @@ Run `pip install -r requirements.txt`.
 - song preview (-> iframe messaging with player)
 - design preview (-> iframe messaging with player)
 - mp3-midi offset -> save in db or fix in file
+

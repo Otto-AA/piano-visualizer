@@ -3,7 +3,7 @@ import json
 import os
 import click
 from flask import (
-    Blueprint, abort, current_app, flash, g, redirect, render_template, request, send_file, url_for
+    Blueprint, abort, current_app, flash, g, make_response, redirect, render_template, request, send_file, url_for
 )
 from flask.cli import with_appcontext
 from werkzeug.utils import secure_filename
@@ -43,7 +43,10 @@ def edit(design_id):
         flash(error)
 
     design = get_design(design_id)
-    return render_template('designs/upload.html', design=design)
+    res = make_response(render_template('designs/upload.html', design=design))
+    res.headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
+    res.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+    return res
 
 @bp.route('/<int:design_id>', methods=['GET'])
 def get_design(design_id):

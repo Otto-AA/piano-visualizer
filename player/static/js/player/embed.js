@@ -9,4 +9,9 @@ export class EmbedPlayer {
         console.log('play-embed-song', this.frame, song)
         this.frame.postMessage({ 'action': 'play-embed-song', 'data': song.toJSON() })
     }
+
+    applyEmbedDesign(design) {
+        console.log('apply-embed-design', this.frame, design)
+        this.frame.postMessage({ 'action': 'apply-embed-design', 'data': design.toJSON() })
+    }
 }

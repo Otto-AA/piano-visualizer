@@ -16,7 +16,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<title>AA | Music Player</title>
-	
+
 	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/upload.css')}}">
 	<link href='https://fonts.googleapis.com/css?family=Quicksand:400,300' rel='stylesheet' type='text/css'>
@@ -26,51 +26,52 @@
 	<h1 class="text-center">{% if not edit %}Create new Design{% else %}Edit Design{% endif %}</h1>
 	<div class="container">
 		{% for message in get_flashed_messages() %}
-			<div class="flash">{{ message }}</div>
+		<div class="flash">{{ message }}</div>
 		{% endfor %}
 		<form method="POST" enctype=multipart/form-data>
-			<div class="form-group">
-				<div class="form-group" id="custom_design">
-					<legend>Background</legend>
-					<label for="background_image">Background image</label>
-					<input type="file" accept=".jpg,.png" class="form-control-file" name="background_image" data-toggle-aa="collapse" data-target="#custom_design_credits">
-					<span class="collapse" id="custom_design_credits">
-						<label for="image_creator">Creator of the image</label>
-						<input type="text" name="image_creator" {% if design['image_creator'] %}value="{{design['image_creator']}}"{% endif %}>
-						<label for="image_link">Credit link for the image</label>
-						<input type="text" name="image_link" {% if design['image_link'] %}value="{{design['image_link']}}"{% endif %}>
-					</span>
-					<label for="background_color">Gradient color</label>
-					<input type="color" name="background_color" value="{{design['background_color']}}">
-					<br>
-					<legend>Audio Visualization</legend>
-					<label>Tick color (Gradient)</label>
-					<input type="color" name="tick_gradient_0" value="{{design['tick_gradient'][0]}}">
-					<input type="color" name="tick_gradient_1" value="{{design['tick_gradient'][1]}}">
-					<input type="color" name="tick_gradient_2" value="{{design['tick_gradient'][2]}}">
-					<br>
-					<label>Tick width</label>
-					<input type="number" name="tick_width" min="1" max="20" value="{{design['tick_width']}}">
-					<legend>Piano Visualization</legend>
-					<label for="piano_border_white">White key border</label>
-					<input type="checkbox" name="piano_border_white" {% if design['piano_border_white'] %}checked{% endif %}>
-					<br>
-					<label for="piano_border_black">Black key border</label>
-					<input type="checkbox" name="piano_border_black" {% if design['piano_border_black'] %}checked{% endif %}>
-					<br>
-					<label for="piano_border_color">Border Color</label>
-					<input type="color" name="piano_border_color" value="{{design['piano_border_color']}}">
-					<br>
-					<label>Key-pressed color</label>
-					<input type="color" name="key_pressed_color" value="{{design['key_pressed_color']}}">
-					<legend>General design</legend>
-					<label for="font_color">Font color</label>
-					<input type="color" name="font_color" value="{{design['font_color']}}">
-				</div>
-				<div class="form-group">
-					<legend>Design preview</legend>
-					<button id="open_preview">Click to open Preview</button>
-				</div>
+			<div class="form-group" id="custom_design">
+				<legend>Background</legend>
+				<label for="background_image">Background image</label>
+				<input type="file" accept=".jpg,.png" class="form-control-file" name="background_image"
+					data-toggle-aa="collapse" data-target="#custom_design_credits">
+				<span class="collapse" id="custom_design_credits">
+					<label for="image_creator">Creator of the image</label>
+					<input type="text" name="image_creator" {% if design['image_creator']
+						%}value="{{design['image_creator']}}" {% endif %}>
+					<label for="image_link">Credit link for the image</label>
+					<input type="text" name="image_link" {% if design['image_link'] %}value="{{design['image_link']}}"
+						{% endif %}>
+				</span>
+				<label for="background_color">Gradient color</label>
+				<input type="color" name="background_color" value="{{design['background_color']}}">
+				<br>
+				<legend>Audio Visualization</legend>
+				<label>Tick color (Gradient)</label>
+				<input type="color" name="tick_gradient_0" value="{{design['tick_gradient'][0]}}">
+				<input type="color" name="tick_gradient_1" value="{{design['tick_gradient'][1]}}">
+				<input type="color" name="tick_gradient_2" value="{{design['tick_gradient'][2]}}">
+				<br>
+				<label>Tick width</label>
+				<input type="number" name="tick_width" min="1" max="20" value="{{design['tick_width']}}">
+				<legend>Piano Visualization</legend>
+				<label for="piano_border_white">White key border</label>
+				<input type="checkbox" name="piano_border_white" {% if design['piano_border_white'] %}checked{% endif
+					%}>
+				<br>
+				<label for="piano_border_black">Black key border</label>
+				<input type="checkbox" name="piano_border_black" {% if design['piano_border_black'] %}checked{% endif
+					%}>
+				<br>
+				<label for="piano_border_color">Border Color</label>
+				<input type="color" name="piano_border_color" value="{{design['piano_border_color']}}">
+				<br>
+				<label>Key-pressed color</label>
+				<input type="color" name="key_pressed_color" value="{{design['key_pressed_color']}}">
+				<legend>General design</legend>
+				<label for="font_color">Font color</label>
+				<input type="color" name="font_color" value="{{design['font_color']}}">
+			</div>
+			<button class="btn btn-secondary" id="open_preview">Open Preview</button>
 			<button type="submit" class="btn btn-primary">Submit</button>
 		</form>
 	</div>
@@ -83,7 +84,7 @@
 
 	<!-- Own Scripts -->
 	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap_collapse.js')}}"></script>
-	<script type="module" src="{{url_for('static', filename='js/upload.js')}}"></script>
+	<script type="module" src="{{url_for('static', filename='js/editDesign.js')}}"></script>
 </body>
 
 </html>

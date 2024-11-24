@@ -51,7 +51,7 @@ def upload():
                 song_id = cursor.lastrowid
                 update_song_design_id(song_id, design_id)
                 upload_song_files(data['files'], song_id, data['file_name'])
-                return redirect(url_for('designs.edit', design_id=design_id))
+                return redirect(url_for('designs.edit', design_id=design_id, song=data['file_name']))
             except db.IntegrityError:
                 error = f'A song with a similar name already exists.'
         flash(error)

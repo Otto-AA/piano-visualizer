@@ -163,7 +163,7 @@ class Interface {
 		$('.songlist li:nth-child(' + (this.currentSongIndex + 1) + ')').addClass('active');
 
 		// Change background
-		this.currentSong.loadDesign()
+		this.currentSong?.loadDesign()
 			.then(design => this.design.applyDesign(design))
 
 		// Buttons
@@ -286,7 +286,8 @@ class Design {
 				credit: {
 					name: design.image_creator,
 					link: design.image_link,
-				}
+				},
+				data: design.image_data,
 			}
 		});
 		this._setPianoStyle({
@@ -409,8 +410,6 @@ $(document).ready(function () {
 			}, { dataDir, designDir }))
 
 			let curSongIndex = 0
-			if (!songlist.length)
-				return alert('Cannot load page because no songs have been added yet.')
 
 			design = new Design()
 			const player = new Player()
@@ -472,7 +471,7 @@ $(document).ready(function () {
 			shortcuts.add(83, () => player.stop())
 
 			window.addEventListener('message', ({ origin, data: { action, data }}) => {
-				console.log('onmessage')
+				console.log('onmessage', action)
 				if (window.origin !== origin)
 					return console.error('Invalid origin', origin)
 				if (action === 'play-embed-song') {
@@ -481,8 +480,14 @@ $(document).ready(function () {
 					songlist.push(song)
 					const newSongIndex = songlist.length - 1
 					ui.changeSong(newSongIndex)
+				} else if (action === 'apply-embed-design') {
+					console.log('apply-embed-design', data)
+					design.applyDesign(data)
 				}
 			})
+			
+			if (!songlist.length)
+				alert('Cannot load page because no songs have been added yet.')
 		}).fail(function (error) {
 			alert('Couldn\'t load songlist')
 			console.log("Fail")
