@@ -29,6 +29,11 @@ CREATE TABLE IF NOT EXISTS songs (
   UNIQUE (created_by, file_name)
 );
 
+CREATE TRIGGER your_table_trig AFTER UPDATE ON your_table
+BEGIN
+  UPDATE songs SET updated_at = datetime('now') WHERE id = NEW.id;
+END;
+
 CREATE TABLE IF NOT EXISTS song_files (
   song_id INTEGER NOT NULL,
   type TEXT CHECK (type in ('mp3', 'mid', 'pdf')) NOT NULL,

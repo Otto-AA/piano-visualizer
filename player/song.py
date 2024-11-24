@@ -1,3 +1,4 @@
+import datetime
 import os
 from flask import (
     Blueprint, abort, flash, g, redirect, render_template, request, url_for
@@ -10,6 +11,9 @@ from player.auth import login_required
 
 bp = Blueprint('songs', __name__, url_prefix='/songs')
 
+@bp.context_processor
+def inject_today_date():
+    return {'today_date': datetime.date.today()}
 
 @bp.route('/', methods=['GET'])
 @login_required
@@ -30,29 +34,11 @@ def get_default_design_id():
 @login_required
 def upload():
     if request.method == 'POST':
-
-        name = request.form['name']
-        song_type = request.form['type']
-        design_id = get_default_design_id()
-        creation_date = request.form['date']
-
-        files = {}
-        file_name = secure_filename(name)
-        for file_type in ['audio', 'midi', 'pdf']:
-            if (file_type + '_file') in request.files:
-                file = request.files[file_type + '_file']
-                # browser submits an empty filename if not specified
-                if hasattr(file, 'filename') and file.filename != '':
-                    if allowed_file(file.filename):
-                        files[file_type] = file
-                    else:
-                        error = 'Invalid file extension. Only allowed: ' + ', '.join(ALLOWED_SONG_EXTENSIONS)
         db = get_db()
-        error = None
+        data, error = get_upload_request_data(request)
+        design_id = get_default_design_id()
 
-        if len(name) == 0 or len(file_name) == 0:
-            error = 'Please use a different file name.'
-        if 'audio' not in files or 'midi' not in files:
+        if 'audio' not in data['files'] or 'midi' not in data['files']:
             error = 'Audio and midi files are required.'
 
         if error is None:
@@ -60,27 +46,15 @@ def upload():
             try:
                 cursor.execute(
                     'INSERT INTO songs (name, file_name, type, design, created_by, song_creation) VALUES (?, ?, ?, ?, ?, ?)',
-                    (name, file_name, song_type, design_id, g.user['id'], creation_date)
+                    (data['name'], data['file_name'], data['type'], design_id, g.user['id'], data['creation_date'])
                 )
+                db.commit()
                 song_id = cursor.lastrowid
-                for file in files.values():
-                    file_extension = get_file_extension(file.filename)
-                    filename = f'{file_name}.{file_extension}'
-                    file_path = get_file_path(g.user['id'], filename)
-                    file.save(file_path)
-                    try:
-                        cursor.execute(
-                            'INSERT INTO song_files (song_id, type) VALUES (?, ?)',
-                            (song_id, file_extension)
-                        )
-                        db.commit()
-                    except db.IntegrityError:
-                        pass
+                upload_song_files(data['files'], song_id, data['file_name'])
             except db.IntegrityError:
                 error = f'A song with a similar name already exists.'
             else:
                 return redirect(url_for('index'))
-        # TODO: show error in frontend
         flash(error)
     return render_template('songs/upload.html')
 
@@ -92,13 +66,69 @@ def edit(id):
     if song is None:
         abort(404, 'Song not found.')
     assert_song_owner(song, g.user['id'])
+
     if request.method == 'POST':
         db = get_db()
-        error = f'Not implemented ({id})'
+        data, error = get_upload_request_data(request)
+        if data['file_name'] != song['file_name']:
+            error = 'Renaming songs not yet implemented'
 
+        if error is None:
+            try:
+                db.execute(
+                    'UPDATE songs '
+                    'SET name = ?, file_name = ?, type = ?, song_creation = ? '
+                    'WHERE id = ?',
+                    (data['name'], data['file_name'], data['type'], data['creation_date'],
+                     song['id'])
+                )
+                db.commit()
+                upload_song_files(data['files'], song['id'], data['file_name'])
+            except db.IntegrityError:
+                error = f'A song with a similar name already exists.'
+            else:
+                return redirect(url_for('index'), code=303)
+        print(error)
         flash(error)
     return render_template('songs/upload.html', song=song)
 
+def get_upload_request_data(req):
+    error = None
+    data = {
+        'name': req.form['name'],
+        'file_name': secure_filename(req.form['name']),
+        'type': req.form['type'],
+        'creation_date': req.form['date'],
+        'files': {}
+    }
+    for file_type in ['audio', 'midi', 'pdf']:
+        if (file_type + '_file') in req.files:
+            file = req.files[file_type + '_file']
+            # browser submits an empty filename if not specified
+            if hasattr(file, 'filename') and file.filename != '':
+                if allowed_file(file.filename):
+                    data['files'][file_type] = file
+                else:
+                    error = 'Invalid file extension. Only allowed: ' + ', '.join(ALLOWED_SONG_EXTENSIONS)
+    if len(data['name']) == 0 or len(data['file_name']) == 0:
+        error = 'Please use a different file name.'
+    return data, error
+
+def upload_song_files(files, song_id, file_name):
+    db = get_db()
+    for file in files.values():
+        file_extension = get_file_extension(file.filename)
+        filename = f'{file_name}.{file_extension}'
+        file_path = get_file_path(g.user['id'], filename)
+        file.save(file_path)
+        try:
+            db.execute(
+                'INSERT INTO song_files (song_id, type) VALUES (?, ?)',
+                (song_id, file_extension)
+            )
+            db.commit()
+        except db.IntegrityError:
+            pass
 
 @bp.route('/<int:id>', methods=['DELETE'])
 @login_required

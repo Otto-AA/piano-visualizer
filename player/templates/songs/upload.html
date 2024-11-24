@@ -25,36 +25,35 @@
 <body>
 	<h1 class="text-center">{% if not song %}Create new Song{% else %}Edit Song{% endif %}</h1>
 	<div class="container">
+		{% for message in get_flashed_messages() %}
+			<div class="flash">{{ message }}</div>
+		{% endfor %}
 		<form method="POST" enctype=multipart/form-data>
 			<div class="form-group">
 				<legend>Song</legend>
-				<input type="text" class="form-control" name="name" placeholder="Song name" {% if song %}value="{{song['name']}}"{% endif %}} required>
+				<input type="text" class="form-control" name="name" placeholder="Song name" {% if song %}value="{{song['name']}}"{% endif %} required>
 				<br>
 				<input type="text" class="form-control" name="youtubeId" placeholder="Optional Youtube link">
 				<br>
-				<textarea class="form-control" name="info" rows="3" placeholder="Optional song description"></textarea>
-				<br>
 				<select class="form-control" name="type" data-toggle-aa="collapse">
-					<option value="composition">Piano Composition</option>
-					<option value="improvisation">Piano Improvisation</option>
-					<option value="cover" data-target="#composers_group">Piano Cover</option>
+					<option value="composition" {% if song and song['type'] == 'composition' %}selected{% endif %}>Piano Composition</option>
+					<option value="improvisation" {% if song and song['type'] == 'improvisation' %}selected{% endif %}>Piano Improvisation</option>
+					<option value="cover" data-target="#composers_group" {% if song and song['type'] == 'cover' %}selected{% endif %}>Piano Cover</option>
 				</select>
 				<div class="form-group collapse" id="composers_group">
 					<textarea class="form-control" name="composers" rows="2" placeholder="Original Composers (one per line)"></textarea>
 				</div>
 				<br>
 				<label for="date">Creation date</label>
-				<input type="date" id="date" name="date" required>
+				<input type="date" id="date" name="date" value="{{today_date if not song else song['song_creation']}}" required>
 				<br>
 			</div>
 			<div class="form-group">
 				<legend>Files</legend>
 				<label for="audio_file">Audio (mp3)</label>
-				<input type="file" class="form-control-file" name="audio_file" aria-describedby="audio_file_help" accept=".mp3" required>
-				<small id="audio_file_help" class="form-text text-muted">(Required)</small>
+				<input type="file" class="form-control-file" name="audio_file" accept=".mp3" {{'required' if not song}}>
 				<label for="midi_file">MIDI (mid)</label>
-				<input type="file" class="form-control-file" name="midi_file" aria-describedby="midi_file_help" accept=".mid" required>
-				<small id="audio_file_help" class="form-text text-muted">(Required)</small>
+				<input type="file" class="form-control-file" name="midi_file" accept=".mid" {{'required' if not song}}>
 				<label for="pdf_file">Sheets (pdf)</label>
 				<input type="file" class="form-control-file" name="pdf_file" accept=".pdf">
 			</div>
