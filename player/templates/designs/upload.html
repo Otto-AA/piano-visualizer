@@ -30,19 +30,15 @@
 		{% endfor %}
 		<form method="POST" enctype=multipart/form-data>
 			<div class="form-group">
-				<legend>Design</legend>
-				<label for="name">Name</label>
-				<input type="text" class="form-control" name="name" placeholder="Design name" value="{{design['name']}}" required>
-				<br>
 				<div class="form-group" id="custom_design">
 					<legend>Background</legend>
 					<label for="background_image">Background image</label>
 					<input type="file" accept=".jpg,.png" class="form-control-file" name="background_image" data-toggle-aa="collapse" data-target="#custom_design_credits">
 					<span class="collapse" id="custom_design_credits">
 						<label for="image_creator">Creator of the image</label>
-						<input type="text" name="image_creator" {% if 'image_creator' in design %}value="{{design['image_creator']}}"{% endif %}>
+						<input type="text" name="image_creator" {% if design['image_creator'] %}value="{{design['image_creator']}}"{% endif %}>
 						<label for="image_link">Credit link for the image</label>
-						<input type="text" name="image_link" {% if 'image_link' in design %}value="{{design['image_link']}}"{% endif %}>
+						<input type="text" name="image_link" {% if design['image_link'] %}value="{{design['image_link']}}"{% endif %}>
 					</span>
 					<label for="background_color">Gradient color</label>
 					<input type="color" name="background_color" value="{{design['background_color']}}">

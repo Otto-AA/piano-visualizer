@@ -46,7 +46,7 @@
 			{% for song in songs %}
 				<li class="song list-group-item flex-column align-items-start" data-dataname="{{song.file_name}}">
 					<div class="d-flex w-100 justify-content-between">
-						<h5 class="my-auto">{{song.name}}</h5>
+						<h5 class="my-auto"><a href="{{url_for('users.player', user_id=g.user['id'], v=song.file_name)}}" target="_blank">{{song.name}}</a></h5>
 						<div>
 							<a href="{{url_for('songs.edit', id=song.id)}}"><button class="btn btn-info cursor-pointer">Edit</button></a>
 							<button class="btn btn-danger delete-song" onclick="deleteSong('{{song.name}}', {{song.id}})">Delete</button>

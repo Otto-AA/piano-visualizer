@@ -21,3 +21,4 @@ Run `pip install -r requirements.txt`.
 - link everything together properly
 - song preview (-> iframe messaging with player)
 - design preview (-> iframe messaging with player)
+- mp3-midi offset -> save in db or fix in file
