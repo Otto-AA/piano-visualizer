@@ -1,7 +1,7 @@
 import datetime
 import os
 from flask import (
-    Blueprint, abort, flash, g, redirect, render_template, request, url_for
+    Blueprint, abort, flash, g, make_response, redirect, render_template, request, url_for
 )
 from werkzeug.utils import secure_filename
 from player.design import create_default_design, update_song_design_id
@@ -55,7 +55,12 @@ def upload():
             except db.IntegrityError:
                 error = f'A song with a similar name already exists.'
         flash(error)
-    return render_template('songs/upload.html')
+
+    # set headers for SharedArrayBuffer used by ffmpeg
+    res = make_response(render_template('songs/upload.html'))
+    res.headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
+    res.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+    return res
 
 
 @bp.route('/<int:id>/edit', methods=['GET', 'POST'])
@@ -159,10 +164,10 @@ def get_song_by_id(id):
 def get_song_with_files(song_id):
     db = get_db()
     song = db.execute(
-        'SELECT name, file_name, songs.type, design, created_by, created_at, updated_at, song_creation, GROUP_CONCAT(file.type) as files '
+        'SELECT name, file_name, songs.type, design_id, created_by, created_at, updated_at, song_creation, GROUP_CONCAT(file.type) as files '
         'FROM songs INNER JOIN song_files file ON songs.id = file.song_id '
         'WHERE songs.id = ? '
-        'GROUP BY name, file_name, songs.type, design',
+        'GROUP BY name, file_name, songs.type, design_id',
         (song_id, )
     ).fetchone()
     song = dict(song)

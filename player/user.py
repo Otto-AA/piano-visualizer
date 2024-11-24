@@ -1,6 +1,6 @@
 import os
 from flask import (
-    Blueprint, abort, current_app, render_template, send_file
+    Blueprint, abort, current_app, make_response, render_template, send_file
 )
 from player.db import get_db
 
@@ -9,7 +9,10 @@ bp = Blueprint('users', __name__, url_prefix='/users')
 
 @bp.route('/<int:user_id>/player', methods=['GET'])
 def player(user_id):
-    return render_template('player/index.html')
+    res = make_response(render_template('player/index.html'))
+    res.headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
+    res.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+    return res
 
 @bp.route('/<int:user_id>/files/<string:filename>', methods=['GET'])
 def retrieve_file(user_id, filename):

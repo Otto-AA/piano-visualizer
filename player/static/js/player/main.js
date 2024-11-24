@@ -1,5 +1,6 @@
 import { Player } from './Player.js'
 import { Framer, Scene, Tracker } from './audioVisualization.js'
+import { Song, EmbedSong } from './song.js'
 
 /** @type {Design} */
 var design // Currently also used in playerPreview
@@ -10,31 +11,6 @@ const dataDir = `${defaultUserPath}/files/`;
 const designDir = `/designs/`;
 const imageDir = `/images/`;
 const VIDEO_QUERY_PARAM = 'v'
-
-class Song {
-	constructor({ name, dataName, composer, type, info, date, files, YT, designId }) {
-		this.name = name;
-		this.dataName = dataName;
-		this.date = date; // TODO: date format
-
-		this._filePath = dataDir + dataName;
-		this.files = files;
-
-		this.youtubeLink = YT ?? '';
-		this.composer = Array.isArray(composer) ? composer.join(" & ") : (composer ?? "[unknown]")
-		this.info = info
-		this.type = type;
-		this.designId = designId
-	}
-
-	getFileByExtension(fileExtension) {
-		return `${this._filePath}.${fileExtension}`;
-	}
-
-	hasFile(fileExtension) {
-		return this.files.includes(fileExtension);
-	}
-}
 
 class PianoKey {
 	constructor({ id, note, color }) {
@@ -187,27 +163,32 @@ class Interface {
 		$('.songlist li:nth-child(' + (this.currentSongIndex + 1) + ')').addClass('active');
 
 		// Change background
-		this.design.loadDesign(this.currentSong.designId)
+		this.currentSong.loadDesign()
+			.then(design => this.design.applyDesign(design))
 
 		// Buttons
 		$('.songlist li').click(({ currentTarget }) => {
 			if ($(currentTarget).hasClass('active'))
 				return false;
 
-			this.currentSongIndex = $(currentTarget).index();
-
-			// Change background
-			this.design.loadDesign(this.currentSong.designId)
-
-			// Load song
-			this.player.stop();
-			this.player.onNext('ready', () => this.player.play());
-			this.player.loadSong(this.currentSong);
+			this.changeSong($(currentTarget).index())
 		});
 		$('#play').click(() => this.player.play());
 		$('#pause').click(() => this.player.pause());
 		$('#stop').click(() => this.player.stop());
 		$('#volume').change(() => this.player.updateVolume($('#volume').val() / 100));
+	}
+
+	changeSong(newSongIndex) {
+		this.currentSongIndex = newSongIndex
+		// Change background
+		this.currentSong.loadDesign()
+			.then(design => this.design.applyDesign(design))
+
+		// Load song
+		this.player.stop();
+		this.player.onNext('ready', () => this.player.play());
+		this.player.loadSong(this.currentSong);
 	}
 
 	get currentSong() {
@@ -287,23 +268,11 @@ class Interface {
 }
 
 class Design {
-	constructor() {
-		this.currentDesignId = ''
-		this.loadedDesigns = {}
-	}
-
 	/**
 	 * @param {Framer} framer
 	 */
 	init(framer) {
 		this.framer = framer
-	}
-
-	async loadDesign(designId) {
-		if (!(designId in this.loadedDesigns)) {
-			await this._fetchDesign(designId)
-		}
-		this.applyDesign(this.loadedDesigns[designId]);
 	}
 
 	applyDesign(design) {
@@ -343,36 +312,14 @@ class Design {
 		});
 	}
 
-	_fetchDesign(designId) {
-		const designPath = `${designDir}${designId}`
-		return new Promise((resolve, reject) => {
-			$.getJSON(designPath)
-				.then(design => {
-					this.currentDesignId = designId;
-					this.loadedDesigns[designId] = design;
-					resolve();
-				})
-				.fail((jqXHR, textStatus, errorThrown) => {
-					console.group("Couldn't load design");
-					console.log(jqXHR);
-					console.log(textStatus);
-					console.log(errorThrown);
-					console.groupEnd();
-					reject(errorThrown);
-				})
-		})
-	}
-
 	_setBackgroundStyle(background) {
 		let backgroundGradient = 'radial-gradient(circle, #000,' + background.gradient.color + ' 25%, #000)';
 
 		// Background picture?
 		if (background.image) {
-			let backgroundImagePath;
-			if (background.image.name.includes('data:image'))
-				backgroundImagePath = background.image.name;
-			else
-				backgroundImagePath = `${imageDir}${background.image.name}`;
+			let backgroundImagePath = `${imageDir}${background.image.name}`
+			if (background.image.data && background.image.data.includes('data:image'))
+				backgroundImagePath = background.image.data;
 
 			backgroundGradient += ', url("' + backgroundImagePath + '")';
 
@@ -459,33 +406,11 @@ $(document).ready(function () {
 				designId: songData.design_id,
 				files: songData.files,
 				info: ''
-			}))
+			}, { dataDir, designDir }))
 
 			let curSongIndex = 0
 			if (!songlist.length)
 				return alert('Cannot load page because no songs have been added yet.')
-
-			// Check if specific song is defined in the url
-			if (hasSearchKey(VIDEO_QUERY_PARAM)) {
-				const songName = getSearchKey(VIDEO_QUERY_PARAM)
-				curSongIndex = songlist.findIndex(song => song.dataName === songName)
-				// Add hidden Song
-				if (curSongIndex < 0) {
-					curSongIndex = 0;
-					songlist.unshift(new Song({
-						name: "[" + songName + "]",
-						dataName: songName,
-						date: "0_0",
-						files: {
-							mp3: true,
-							mid: true,
-							pdf: true
-						},
-						composer: ["Unknown"],
-						type: "Preview"
-					}))
-				}
-			}
 
 			design = new Design()
 			const player = new Player()
@@ -545,6 +470,19 @@ $(document).ready(function () {
 			shortcuts.add(84, () => $('#toggleControls').trigger('click'))
 			// S	-Stop
 			shortcuts.add(83, () => player.stop())
+
+			window.addEventListener('message', ({ origin, data: { action, data }}) => {
+				console.log('onmessage')
+				if (window.origin !== origin)
+					return console.error('Invalid origin', origin)
+				if (action === 'play-embed-song') {
+					console.log('play-embed-song', data)
+					const song = EmbedSong.fromJSON(data)
+					songlist.push(song)
+					const newSongIndex = songlist.length - 1
+					ui.changeSong(newSongIndex)
+				}
+			})
 		}).fail(function (error) {
 			alert('Couldn\'t load songlist')
 			console.log("Fail")
