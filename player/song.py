@@ -4,10 +4,12 @@ from flask import (
     Blueprint, abort, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.utils import secure_filename
+from player.design import create_default_design, update_song_design_id
 from player.user import get_file_path
 from player.db import get_db
 from player.auth import login_required
 
+DEFAULT_DESIGN_NAME = 'Green'
 
 bp = Blueprint('songs', __name__, url_prefix='/songs')
 
@@ -27,16 +29,13 @@ def index():
 
     return render_template('songs/index.html', songs=songs)
 
-def get_default_design_id():
-    return 1
-
 @bp.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
     if request.method == 'POST':
         db = get_db()
         data, error = get_upload_request_data(request)
-        design_id = get_default_design_id()
+        design_id = create_default_design(DEFAULT_DESIGN_NAME)
 
         if 'audio' not in data['files'] or 'midi' not in data['files']:
             error = 'Audio and midi files are required.'
@@ -50,11 +49,11 @@ def upload():
                 )
                 db.commit()
                 song_id = cursor.lastrowid
+                update_song_design_id(song_id, design_id)
                 upload_song_files(data['files'], song_id, data['file_name'])
+                return redirect(url_for('designs.edit', design_id=design_id))
             except db.IntegrityError:
                 error = f'A song with a similar name already exists.'
-            else:
-                return redirect(url_for('index'))
         flash(error)
     return render_template('songs/upload.html')
 

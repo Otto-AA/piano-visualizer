@@ -119,7 +119,6 @@ def create_user_command(username, password):
     """create a new user"""
     user = create_user(username, password)
     print(f"Created user {user['username']} with id {user['id']}")
-    click.echo('Initialized the default designs')
 
 def init_app(app):
     app.cli.add_command(create_user_command)

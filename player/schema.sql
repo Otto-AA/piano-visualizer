@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS admins (
 
 CREATE TABLE IF NOT EXISTS designs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
   created_by INT NOT NULL REFERENCES users (id),
   background_color TEXT NOT NULL, /* format: #1234fd */
   tick_gradient TEXT NOT NULL, /* format: #1234fd,#4321df,#ffffff */
@@ -23,8 +22,7 @@ CREATE TABLE IF NOT EXISTS designs (
   key_pressed_color TEXT NOT NULL,
   font_color TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  UNIQUE (name, created_by)
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS images (

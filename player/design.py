@@ -1,3 +1,4 @@
+from contextlib import closing
 import json
 import os
 import click
@@ -16,56 +17,32 @@ DEFAULT_DESIGNS_DIR = os.path.join(SCRIPT_DIR, 'default_designs')
 bp = Blueprint('designs', __name__, url_prefix='/designs')
 
 
-@bp.route('/', methods=['GET', 'POST'])
+@bp.route('/<int:design_id>/edit', methods=['GET', 'POST'])
 @login_required
-def create_design():
+def edit(design_id):
+    assert_design_owner(design_id, g.user['id'])
     db = get_db()
     if request.method == 'POST':
         data, error = get_upload_request_data(request)
-        
+
         if error is None:
-            cursor = db.cursor()
-            try:
-                cursor.execute(
-                    'INSERT INTO designs (name, created_by, background_color, tick_gradient,'
-                    ' tick_width, piano_border_white, piano_border_black, piano_border_color,'
-                    ' key_pressed_color, font_color) '
-                    'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    (data['name'], g.user['id'], data['background_color'], ','.join(data['tick_gradient']),
-                     data['tick_width'], data['piano_border_white'], data['piano_border_black'], data['piano_border_color'],
-                     data['key_pressed_color'], data['font_color'])
-                )
-                design_id = cursor.lastrowid
-                cursor.close()
-                db.commit()
-                if 'background_image' in data:
-                    upload_design_image(data, design_id)
-                if 'updateSong' in request.args:
-                    song_id = request.args.get('updateSong', type=int)
-                    update_song_design_id(song_id, design_id)
-            except db.IntegrityError:
-                error = f'A design with a similar name already exists.'
-            else:
-                return redirect(url_for('index'))
+            db.execute(
+                'UPDATE designs '
+                'SET background_color = ?, tick_gradient = ?,'
+                ' tick_width = ?, piano_border_white = ?, piano_border_black = ?, piano_border_color = ?,'
+                ' key_pressed_color = ?, font_color = ? '
+                'WHERE id = ?',
+                (data['background_color'], ','.join(data['tick_gradient']),
+                    data['tick_width'], data['piano_border_white'], data['piano_border_black'], data['piano_border_color'],
+                    data['key_pressed_color'], data['font_color'], design_id)
+            )
+            db.commit()
+            if 'background_image' in data:
+                upload_design_image(data, design_id)
+            return redirect(url_for('index'))
         flash(error)
-    # oldest design seems like a good template
-    # however this removes previous input if an error occured
-    default_design = db.execute(
-        'SELECT * FROM designs '
-        'ORDER BY created_at '
-        'LIMIT 1').fetchone()
-    default_design = prepare_design_dto(default_design)
 
-    return render_template('designs/upload.html', design=default_design)
-
-@bp.route('/<int:design_id>/edit', methods=['GET', 'POST'])
-@login_required
-def edit_design(design_id):
-    db = get_db()
-    # oldest design seems like a good template
     design = get_design(design_id)
-    assert_design_owner(design, g.user['id'])
-
     return render_template('designs/upload.html', design=design)
 
 @bp.route('/<int:design_id>', methods=['GET'])
@@ -77,12 +54,31 @@ def get_design(design_id):
         'WHERE id = ?', (design_id, )).fetchone()
     return prepare_design_dto(design)
 
+def create_default_design(name):
+    """name of design in default_designs directory"""
+    db = get_db()
+    path = os.path.join(DEFAULT_DESIGNS_DIR, f'{name}.json')
+    with open(path) as design_file , closing(db.cursor()) as cursor:
+        data = json.load(design_file)
+        cursor.execute(
+            'INSERT INTO designs (created_by, background_color, tick_gradient,'
+            ' tick_width, piano_border_white, piano_border_black, piano_border_color,'
+            ' key_pressed_color, font_color) '
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (g.user['id'], data['background_color'], data['tick_gradient'],
+                data['tick_width'], data['piano_border_white'], data['piano_border_black'], data['piano_border_color'],
+                data['key_pressed_color'], data['font_color'])
+        )
+        return cursor.lastrowid
+
 def prepare_design_dto(design):
     design = dict(design)
     design['tick_gradient'] = design['tick_gradient'].split(',')
     return design
 
 def assert_design_owner(design, user_id):
+    if isinstance(design, int):
+        design = get_design(design)
     if design['created_by'] != user_id:
         abort(403, 'This design is not created by you')
 
@@ -126,7 +122,6 @@ def get_images_folder():
 def get_upload_request_data(req):
     error = None
     data = {
-        'name': req.form['name'],
         'background_color': req.form['background_color'],
         'tick_width': req.form['tick_width'],
         'piano_border_white': req.form.get('piano_border_white') != None,
@@ -150,8 +145,6 @@ def get_upload_request_data(req):
                     error = 'If background image is given, you must specify the creator'
             else:
                 error = 'Invalid file extension. Only allowed: ' + ', '.join(ALLOWED_SONG_EXTENSIONS)
-    if len(data['name']) == 0:
-        error = 'Please enter a design name.'
     return data, error
 
 
@@ -168,14 +161,13 @@ def init_default_designs(user_id):
     for file in os.scandir(DEFAULT_DESIGNS_DIR):
         with open(file.path) as design_file:
             d = json.load(design_file)
-            name = file.name.split('.')[0]
             db.execute(
                 'INSERT INTO designs '
-                '(name, created_by, background_color, tick_gradient, tick_width,'
+                '(created_by, background_color, tick_gradient, tick_width,'
                 ' piano_border_white, piano_border_black, piano_border_color,'
                 ' key_pressed_color, font_color) '
-                'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (name, user_id, d['background_color'], d['tick_gradient'], d['tick_width'],
+                'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (user_id, d['background_color'], d['tick_gradient'], d['tick_width'],
                  d['piano_border_white'], d['piano_border_black'], d['piano_border_color'],
                  d['key_pressed_color'], d['font_color'])
             )
