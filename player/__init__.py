@@ -4,11 +4,12 @@ from . import db, auth, song, user, design, image
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
+    instance_path_absolute = os.path.abspath(app.instance_path)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'player.sqlite'),
-        USER_FOLDER=os.path.join(app.instance_path, 'users'),
-        IMAGE_FOLDER=os.path.join(app.instance_path, 'images'),
+        DATABASE=os.path.join(instance_path_absolute, 'player.sqlite'),
+        USER_FOLDER=os.path.join(instance_path_absolute, 'users'),
+        IMAGE_FOLDER=os.path.join(instance_path_absolute, 'images'),
         MAX_CONTENT_LENGTH=16 * 1000 * 1000
     )
 
