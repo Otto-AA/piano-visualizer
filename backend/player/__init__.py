@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, send_from_directory, url_for
 from . import db, auth, song, user
 
 def create_app(test_config=None):
@@ -27,5 +27,12 @@ def create_app(test_config=None):
     app.register_blueprint(song.bp)
     app.add_url_rule('/song', endpoint='index')
     app.register_blueprint(user.bp)
+
+
+    # TODO: add this to a base.html template instead
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(os.path.join(app.root_path, 'static'),
+                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     return app
