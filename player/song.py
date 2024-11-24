@@ -8,7 +8,7 @@ from player.db import get_db
 from player.auth import login_required
 
 
-bp = Blueprint('song', __name__, url_prefix='/song')
+bp = Blueprint('songs', __name__, url_prefix='/songs')
 
 
 @bp.route('/', methods=['GET'])
@@ -17,7 +17,7 @@ def index():
     user_id = g.user['id']
     db = get_db()
     songs = db.execute(
-        'SELECT * FROM song WHERE created_by = ?',
+        'SELECT * FROM songs WHERE created_by = ?',
         (user_id, )
     ).fetchall()
 
@@ -59,7 +59,7 @@ def upload():
             cursor = db.cursor()
             try:
                 cursor.execute(
-                    'INSERT INTO song (name, file_name, type, design, created_by, song_creation) VALUES (?, ?, ?, ?, ?, ?)',
+                    'INSERT INTO songs (name, file_name, type, design, created_by, song_creation) VALUES (?, ?, ?, ?, ?, ?)',
                     (name, file_name, song_type, design_id, g.user['id'], creation_date)
                 )
                 song_id = cursor.lastrowid
@@ -70,7 +70,7 @@ def upload():
                     file.save(file_path)
                     try:
                         cursor.execute(
-                            'INSERT INTO song_file (song_id, type) VALUES (?, ?)',
+                            'INSERT INTO song_files (song_id, type) VALUES (?, ?)',
                             (song_id, file_extension)
                         )
                         db.commit()
@@ -89,13 +89,15 @@ def upload():
 @login_required
 def edit(id):
     song = get_song_by_id(id)
+    if song is None:
+        abort(404, 'Song not found.')
     assert_song_owner(song, g.user['id'])
     if request.method == 'POST':
         db = get_db()
         error = f'Not implemented ({id})'
 
         flash(error)
-    return render_template('songs/edit.html', song=song)
+    return render_template('songs/upload.html', song=song)
 
 
 @bp.route('/<int:id>', methods=['DELETE'])
@@ -109,7 +111,7 @@ def delete(id):
     for file_extension in song['files']:
         path = get_file_path(g.user['id'], f'{file_name}.{file_extension}')
         os.remove(path)
-    db.execute('DELETE FROM song WHERE id = ?', (id, ))
+    db.execute('DELETE FROM songs WHERE id = ?', (id, ))
     db.commit()
     return redirect(url_for('index'), code=303)
 
@@ -120,7 +122,7 @@ def assert_song_owner(song, user_id):
 def get_song_by_id(id):
     db = get_db()
     song = db.execute(
-        'SELECT * FROM song WHERE id = ?',
+        'SELECT * FROM songs WHERE id = ?',
         (id, )
     ).fetchone()
     return song
@@ -128,10 +130,10 @@ def get_song_by_id(id):
 def get_song_with_files(song_id):
     db = get_db()
     song = db.execute(
-        'SELECT name, file_name, song.type, design, created_by, created_at, updated_at, song_creation, GROUP_CONCAT(file.type) as files '
-        'FROM song INNER JOIN song_file file ON song.id = file.song_id '
-        'WHERE song.id = ? '
-        'GROUP BY name, file_name, song.type, design',
+        'SELECT name, file_name, songs.type, design, created_by, created_at, updated_at, song_creation, GROUP_CONCAT(file.type) as files '
+        'FROM songs INNER JOIN song_files file ON songs.id = file.song_id '
+        'WHERE songs.id = ? '
+        'GROUP BY name, file_name, songs.type, design',
         (song_id, )
     ).fetchone()
     song = dict(song)

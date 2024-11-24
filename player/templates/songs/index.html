@@ -36,7 +36,7 @@
 	<div class="container">
 		<h1 class="text-center">Manage your Songs</h1>
 		<br>
-		<a href="{{url_for('song.upload')}}"><button id="uploadSong" class="btn btn-success cursor-pointer"><span class="lead">Upload new Song</span></button></a>
+		<a href="{{url_for('songs.upload')}}"><button id="uploadSong" class="btn btn-success cursor-pointer"><span class="lead">Upload new Song</span></button></a>
 		<hr>
 		<h3>
 			Uploaded Songs
@@ -48,7 +48,7 @@
 					<div class="d-flex w-100 justify-content-between">
 						<h5 class="my-auto">{{song.name}}</h5>
 						<div>
-							<a href="{{url_for('song.edit', id=song.id)}}"><button class="btn btn-info cursor-pointer">Edit</button></a>
+							<a href="{{url_for('songs.edit', id=song.id)}}"><button class="btn btn-info cursor-pointer">Edit</button></a>
 							<button class="btn btn-danger delete-song" onclick="deleteSong('{{song.name}}', {{song.id}})">Delete</button>
 						</div>
 					</div>

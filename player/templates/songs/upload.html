@@ -23,12 +23,12 @@
 </head>
 
 <body>
-	<h1 class="text-center">Create new Song</h1>
+	<h1 class="text-center">{% if not song %}Create new Song{% else %}Edit Song{% endif %}</h1>
 	<div class="container">
 		<form method="POST" enctype=multipart/form-data>
 			<div class="form-group">
 				<legend>Song</legend>
-				<input type="text" class="form-control" name="name" placeholder="Song name" required>
+				<input type="text" class="form-control" name="name" placeholder="Song name" {% if song %}value="{{song['name']}}"{% endif %}} required>
 				<br>
 				<input type="text" class="form-control" name="youtubeId" placeholder="Optional Youtube link">
 				<br>

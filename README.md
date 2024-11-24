@@ -4,9 +4,9 @@ Run `pip install -r requirements.txt`.
 
 # API routes
 
-- POST      /user/newpassword
-- POST      /user/login
-- POST      /user/logout
+- POST      /users/newpassword
+- POST      /users/login
+- POST      /users/logout
 
 - GET       /songs/{user_name}
 - POST      /songs/{user_name}

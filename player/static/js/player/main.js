@@ -4,9 +4,9 @@ import { Framer, Scene, Tracker } from './audioVisualization.js'
 /** @type {Design} */
 var design // Currently also used in playerPreview
 
-const userId = Number(location.pathname.match(/user\/(\d+)\//)[1])
-const defaultUserPath = `/user/${userId}/`;
-const dataDir = `${defaultUserPath}/file/`;
+const userId = Number(location.pathname.match(/users\/(\d+)\//)[1])
+const defaultUserPath = `/users/${userId}/`;
+const dataDir = `${defaultUserPath}/files/`;
 const designDir = `${defaultUserPath}designs/`;
 const VIDEO_QUERY_PARAM = 'v'
 
@@ -416,7 +416,7 @@ class Design {
 // Main
 $(document).ready(function () {
 	// Get Songlist
-	$.getJSON(`${defaultUserPath}/song`)
+	$.getJSON(`${defaultUserPath}/songs`)
 		.done(function (data) {
 			// Save data as Songlist
 			const songlist = data.songs.map(songData => new Song({

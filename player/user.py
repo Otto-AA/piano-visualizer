@@ -5,14 +5,14 @@ from flask import (
 from flask import send_file
 from player.db import get_db
 
-bp = Blueprint('user', __name__, url_prefix='/user')
+bp = Blueprint('users', __name__, url_prefix='/users')
 
 
 @bp.route('/<int:user_id>/player', methods=['GET'])
 def player(user_id):
     return render_template('player/index.html')
 
-@bp.route('/<int:user_id>/file/<string:filename>', methods=['GET'])
+@bp.route('/<int:user_id>/files/<string:filename>', methods=['GET'])
 def retrieve_file(user_id, filename):
     file_path = get_file_path(user_id, filename)
     try:
@@ -20,14 +20,14 @@ def retrieve_file(user_id, filename):
     except FileNotFoundError:
         abort(404, 'File not found')
 
-@bp.route('/<int:user_id>/song', methods=['GET'])
+@bp.route('/<int:user_id>/songs', methods=['GET'])
 def all_songs(user_id):
     db = get_db()
     songs = db.execute(
-        'SELECT name, file_name, song.type, design, GROUP_CONCAT(file.type) as files '
-        'FROM song INNER JOIN song_file file ON song.id = file.song_id '
+        'SELECT name, file_name, songs.type, design, GROUP_CONCAT(file.type) as files '
+        'FROM songs INNER JOIN song_files file ON songs.id = file.song_id '
         'WHERE created_by = ? '
-        'GROUP BY name, file_name, song.type, design',
+        'GROUP BY name, file_name, songs.type, design',
         (user_id, )
     ).fetchall()
     result = []
